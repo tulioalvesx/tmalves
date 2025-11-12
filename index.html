@@ -3,77 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portal de Notícias — RSS Aggregator</title>
-  <!-- Tailwind via CDN -->
+  <title>TMA News — Portal de Notícias</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="color-scheme" content="light dark">
+  <meta name="color-scheme" content="light">
   <style>
-    /* Evita layout shift do dialog */
     dialog::backdrop { backdrop-filter: blur(1px); }
-    /* Cartão */
-    .card-desc p { margin-bottom: .5rem; }
-    .line-clamp-4 {
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;  
-      overflow: hidden;
-    }
+    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .shadow-soft { box-shadow: 0 8px 24px rgba(0,0,0,.06); }
+    /* G1-ish header underline */
+    .bar-red { background-image: linear-gradient(to right, #d10, #f33); height: 3px; }
+    /* Smooth width for progress bar */
+    #progressBar { transition: width .25s ease; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
-  <!-- Loading Overlay -->
-  <div id="loadingOverlay" class="fixed inset-0 z-50 grid place-items-center bg-white/90">
-    <div class="w-[92vw] max-w-xl rounded-2xl p-6 shadow-xl bg-white border border-slate-200">
-      <div class="flex flex-col items-center gap-4">
-        <!-- Logo central -->
-        <div class="flex items-center gap-3">
-          <div class="size-10 rounded-lg bg-indigo-600"></div>
-          <span class="text-2xl font-semibold">TMA News</span>
+  <!-- Loading Overlay (logo + barra, fundo branco) -->
+  <div id="loadingOverlay" class="fixed inset-0 z-[100] grid place-items-center bg-white">
+    <div class="w-[92vw] max-w-md text-center">
+      <img src="logo-escudo.png" alt="Logo" class="mx-auto w-28 h-28 object-contain mb-4" />
+      <h1 class="text-2xl font-semibold mb-4">TMA News</h1>
+      <div class="w-full text-left">
+        <div class="flex justify-between text-sm mb-1">
+          <span>Carregando notícias…</span>
+          <span id="progressPct">0%</span>
         </div>
-        <!-- Barra de progresso -->
-        <div class="w-full">
-          <div class="flex justify-between text-sm mb-1">
-            <span>Carregando notícias…</span>
-            <span id="progressPct">0%</span>
-          </div>
-          <div class="h-3 w-full rounded-full bg-slate-200 overflow-hidden">
-            <div id="progressBar" class="h-3 w-0 bg-indigo-600 transition-[width]"></div>
-          </div>
-          <p id="statusText" class="text-xs text-slate-600 mt-2">Iniciando…</p>
+        <div class="h-3 w-full rounded-full bg-slate-200 overflow-hidden">
+          <div id="progressBar" class="h-3 w-0 bg-red-600"></div>
         </div>
+        <p id="statusText" class="text-xs text-slate-600 mt-2">Iniciando…</p>
       </div>
     </div>
   </div>
 
-  <!-- Header -->
-  <header class="sticky top-0 z-40 backdrop-blur bg-white/70 border-b border-slate-200">
-    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3 px-4 py-3">
-      <div class="flex items-center gap-3">
-        <div class="size-8 rounded-md bg-indigo-600"></div>
-        <h1 class="text-xl font-semibold">Portal de Notícias</h1>
-      </div>
-      <div class="flex items-center gap-2 w-full max-w-xl">
-        <input id="searchInput" type="text" placeholder="Pesquisar (título ou texto)…"
-               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-        <select id="sourceFilter"
-                class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <option value="__all__" selected>Todas as fontes</option>
-        </select>
-        <button id="btnSettings"
-                class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-50">Fontes</button>
+  <!-- Topbar estilo G1 -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
+    <div class="bar-red w-full"></div>
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex items-center justify-between py-3">
+        <div class="flex items-center gap-3">
+          <img src="logo-escudo.png" alt="Logo" class="w-8 h-8 rounded" />
+          <span class="text-xl font-bold tracking-tight">TMA News</span>
+        </div>
+        <div class="flex items-center gap-2 w-full max-w-xl">
+          <input id="searchInput" type="text" placeholder="Pesquisar (título ou texto)…"
+            class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600" />
+          <select id="sourceFilter"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600">
+            <option value="__all__">Todas as fontes</option>
+          </select>
+          <button id="btnSettings"
+            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-50">Fontes</button>
+        </div>
+        <!-- Ícone Instagram no canto direito -->
+        <a href="https://instagram.com/" target="_blank" rel="noopener"
+           class="ml-3 inline-flex items-center justify-center p-1 rounded hover:bg-slate-100">
+          <img src="instagram-icone-icon.png" alt="Instagram" class="w-7 h-7 object-contain" />
+        </a>
       </div>
     </div>
   </header>
 
+  <!-- WhatsApp flutuante -->
+  <a href="https://wa.me/5535998993464?text=Ol%C3%A1%2C%20vim%20pelo%20TMA%20News" target="_blank" rel="noopener"
+     class="fixed bottom-5 right-5 z-40">
+    <img src="WhatsApp-icone.png" alt="WhatsApp" class="w-14 h-14 drop-shadow-lg hover:scale-105 transition" />
+  </a>
+
   <!-- Main -->
   <main class="max-w-6xl mx-auto px-4 py-6">
-    <!-- Destaques -->
+    <!-- Destaques estilo G1 -->
     <section id="highlights" class="mb-8 hidden">
-      <h2 class="text-lg font-semibold mb-3">Destaques</h2>
-      <div id="highlightGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <div id="highlightGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Preenchido via JS -->
+      </div>
     </section>
 
-    <!-- Lista -->
+    <!-- Lista vertical -->
     <section>
       <div id="list" class="grid grid-cols-1 gap-4"></div>
       <p id="emptyState" class="text-slate-600 text-center py-12 hidden">Nenhuma notícia encontrada.</p>
@@ -90,12 +96,12 @@
       <div class="p-5 space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-[1fr,auto] gap-3">
           <input id="newSourceName" type="text" placeholder="Nome da fonte (ex.: G1)"
-                 class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                 class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600" />
           <input id="newSourceUrl" type="url" placeholder="URL do RSS/Atom"
-                 class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                 class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600" />
         </div>
         <div class="flex justify-end">
-          <button id="btnAddSource" class="rounded-lg bg-indigo-600 text-white px-3 py-2 text-sm hover:bg-indigo-700">
+          <button id="btnAddSource" class="rounded-md bg-red-600 text-white px-3 py-2 text-sm hover:bg-red-700">
             Adicionar
           </button>
         </div>
@@ -130,7 +136,6 @@
       return [
         { name: "G1", url: "https://g1.globo.com/rss/g1/", type: "rss" },
         { name: "Folha", url: "https://feeds.folha.uol.com.br/emcimadahora/rss091.xml", type: "rss" },
-        { name: "Estadão", url: "https://feeds.folha.uol.com.br/mundo/rss091.xml", type: "rss" },
         { name: "BBC Brasil", url: "https://feeds.bbci.co.uk/portuguese/rss.xml", type: "rss" },
       ];
     }
@@ -146,15 +151,12 @@
         return defaultSources();
       }
     }
-
     function saveSources(next) {
       localStorage.setItem(LS_KEY, JSON.stringify(next));
       SOURCES = next;
       populateSourceFilter();
     }
-
     function populateSourceFilter() {
-      // limpa mantendo o "Todas"
       sourceFilter.innerHTML = '<option value="__all__">Todas as fontes</option>';
       for (const s of SOURCES) {
         const opt = document.createElement('option');
@@ -172,45 +174,40 @@
     }
     function setStatus(msg) { statusText.textContent = msg; }
 
-    // ========= Proxy robusto (garante XML) =========
-    async function fetchWithFallback(url) {
+    // ========= Proxy robusto (garante XML/HTML) =========
+    async function fetchTextThroughProxies(url, acceptNonXml = false) {
       const attempts = [
-        // AllOrigins (JSON) — mais estável que /raw
         async () => {
           const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-          if (!res.ok) throw new Error('allorigins get ' + res.status);
+          if (!res.ok) throw new Error('allorigins ' + res.status);
           const j = await res.json();
-          return j.contents; // XML string
+          return j.contents;
         },
-        // isomorphic-git CORS proxy
         async () => {
           const res = await fetch(`https://cors.isomorphic-git.org/${url}`);
           if (!res.ok) throw new Error('isomorphic ' + res.status);
           return await res.text();
         },
-        // r.jina.ai — somente se realmente vier XML
         async () => {
           const res = await fetch(`https://r.jina.ai/http://${url.replace(/^https?:\/\//, '')}`);
           if (!res.ok) throw new Error('jina ' + res.status);
           const t = await res.text();
-          if (!t.includes('<rss') && !t.includes('<feed')) throw new Error('jina not xml');
+          if (!acceptNonXml && !t.includes('<rss') && !t.includes('<feed')) throw new Error('jina not xml');
           return t;
         }
       ];
       let lastErr;
       for (const step of attempts) {
-        try {
-          const txt = await step();
-          return txt;
-        } catch (e) {
-          lastErr = e;
-          console.warn('Falha proxy', e);
-        }
+        try { return await step(); } catch (e) { lastErr = e; console.warn('Falha proxy', e); }
       }
       throw lastErr || new Error('Sem proxy disponível');
     }
+    async function fetchRSS(source) {
+      const xml = await fetchTextThroughProxies(source.url);
+      return parseRSS(xml, source.name);
+    }
 
-    // ========= Parse RSS/Atom =========
+    // ========= Parse RSS/Atom + imagem =========
     function textContentSafe(el, sel, fallback = "") {
       const n = el.querySelector(sel);
       return n ? (n.textContent || "").trim() : fallback;
@@ -219,22 +216,23 @@
       const n = el.querySelector(sel);
       return n ? n.getAttribute(attr) : null;
     }
-    function getImageFromItem(item) {
-      // RSS comuns
-      let url = item.querySelector('media\\:content, content')?.getAttribute('url')
+    function getImageFromItemNode(item) {
+      // Tentativas comuns
+      let url = item.querySelector('media\\:content')?.getAttribute('url')
              || item.querySelector('media\\:thumbnail')?.getAttribute('url')
-             || item.querySelector('enclosure')?.getAttribute('url')
-             || item.querySelector('img')?.getAttribute('src');
+             || item.querySelector('enclosure')?.getAttribute('url');
       if (!url) {
-        const desc = textContentSafe(item, 'description');
-        const m = desc.match(/<img[^>]+src=["']([^"']+)["']/i);
-        if (m) url = m[1];
+        // image dentro do description/content:encoded
+        const html = textContentSafe(item, 'content\\:encoded') || textContentSafe(item, 'description');
+        if (html) {
+          const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+          if (m) url = m[1];
+        }
       }
       return url;
     }
     function normalizeText(html) {
       if (!html) return "";
-      // remove tags básicas mantendo texto
       const tmp = document.createElement('div');
       tmp.innerHTML = html;
       return tmp.textContent || tmp.innerText || "";
@@ -247,47 +245,58 @@
       }
       const out = [];
       // RSS 2.0
-      const rssItems = xml.querySelectorAll("rss channel item");
-      rssItems.forEach(item => {
+      xml.querySelectorAll("rss channel item").forEach(item => {
         const title = textContentSafe(item, "title", "(Sem título)");
         const link = textContentSafe(item, "link", "#");
         const pubDateRaw = textContentSafe(item, "pubDate") || textContentSafe(item, "dc\\:date");
         const pubDate = pubDateRaw ? new Date(pubDateRaw) : new Date();
-        const description = textContentSafe(item, "description");
-        const image = getImageFromItem(item);
+        const description = textContentSafe(item, "description") || textContentSafe(item, "content\\:encoded");
+        const image = getImageFromItemNode(item);
         out.push({ title, link, pubDate, description, image, source: sourceName });
       });
       if (out.length) return out;
-
       // Atom
-      const atomEntries = xml.querySelectorAll("feed entry");
-      atomEntries.forEach(entry => {
+      xml.querySelectorAll("feed entry").forEach(entry => {
         const title = textContentSafe(entry, "title", "(Sem título)");
-        let link = attr(entry, "link", "href") || "#";
+        let link = attr(entry, "link[rel='alternate']", "href") || attr(entry, "link", "href") || "#";
         const pubDateRaw = textContentSafe(entry, "updated") || textContentSafe(entry, "published");
         const pubDate = pubDateRaw ? new Date(pubDateRaw) : new Date();
         const summary = textContentSafe(entry, "summary") || textContentSafe(entry, "content");
-        const image = getImageFromItem(entry);
+        let image = getImageFromItemNode(entry);
         out.push({ title, link, pubDate, description: summary, image, source: sourceName });
       });
       return out;
     }
 
-    async function fetchRSS(source) {
-      const xml = await fetchWithFallback(source.url);
-      return parseRSS(xml, source.name);
+    // ========= Fallback OG:image (lazy) =========
+    async function tryFillMissingImages(items, max = 10) {
+      const targets = items.filter(x => !x.image).slice(0, max);
+      for (const it of targets) {
+        try {
+          const html = await fetchTextThroughProxies(it.link, true);
+          const meta = (new DOMParser()).parseFromString(html, "text/html");
+          const og = meta.querySelector('meta[property="og:image"], meta[name="og:image"]');
+          const tw = meta.querySelector('meta[name="twitter:image"], meta[property="twitter:image"]');
+          const linkImg = meta.querySelector('link[rel="image_src"]');
+          const url = og?.getAttribute('content') || tw?.getAttribute('content') || linkImg?.getAttribute('href');
+          if (url) {
+            it.image = url;
+            // atualiza card na UI (se existir)
+            const cardImg = document.querySelector(`[data-hash="${hash(it)}"] img[data-role="thumb"]`);
+            if (cardImg) {
+              cardImg.src = url;
+            }
+          }
+        } catch (e) {
+          console.warn('og:image fail', it.link, e);
+        }
+      }
     }
 
     // ========= Render =========
     function formatDate(d) {
-      try {
-        return new Intl.DateTimeFormat('pt-BR', {
-          dateStyle: 'medium',
-          timeStyle: 'short'
-        }).format(d);
-      } catch {
-        return d.toLocaleString();
-      }
+      try { return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium', timeStyle: 'short' }).format(d); }
+      catch { return d.toLocaleString(); }
     }
     function matchesSearch(item, term) {
       if (!term) return true;
@@ -299,55 +308,80 @@
       const term = searchInput.value.trim();
       return items.filter(it => (src === '__all__' || it.source === src) && matchesSearch(it, term));
     }
+    function hash(it) {
+      return btoa(unescape(encodeURIComponent((it.link||'') + '|' + (it.title||'')))).replace(/=+$/,'');
+    }
 
     function renderHighlights(items) {
-      const top = items.slice(0, 6);
-      if (!top.length) {
-        highlights.classList.add('hidden');
-        highlightGrid.innerHTML = '';
-        return;
-      }
+      // Padrão: 1 grande (col-span-2 em lg) + 2 médios ao lado
+      const withImg = items.filter(x => !!x.image);
+      const top = withImg.slice(0, 3);
+      if (!top.length) { highlights.classList.add('hidden'); highlightGrid.innerHTML = ''; return; }
       highlights.classList.remove('hidden');
-      highlightGrid.innerHTML = top.map(it => `
-        <a class="block rounded-xl border border-slate-200 bg-white hover:shadow-md transition p-4"
-           href="${it.link}" target="_blank" rel="noopener">
-          <div class="flex gap-3">
-            <div class="w-24 h-24 shrink-0 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center">
-              ${it.image ? `<img src="${it.image}" alt="" class="w-full h-full object-cover">` : `<div class="text-slate-400 text-sm">Sem imagem</div>`}
-            </div>
-            <div class="min-w-0">
-              <div class="text-sm text-slate-500">${it.source} • ${formatDate(it.pubDate)}</div>
-              <h3 class="font-semibold line-clamp-2">${it.title}</h3>
-            </div>
+
+      const [a, b, c] = [top[0], top[1], top[2]];
+      const colA = a ? `
+        <a href="${a.link}" target="_blank" rel="noopener" class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2">
+          <div class="relative">
+            <img src="${a.image}" alt="" class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />
           </div>
-        </a>
-      `).join('');
+          <div class="p-4">
+            <div class="text-sm text-slate-500">${a.source} • ${formatDate(a.pubDate)}</div>
+            <h2 class="text-2xl font-bold mt-1 mb-2 leading-tight">${a.title}</h2>
+            <p class="text-slate-700 line-clamp-3">${(a.description||'').replace(/</g,'&lt;')}</p>
+          </div>
+        </a>` : '';
+
+      function smallCard(x) {
+        if (!x) return '';
+        return `
+          <a href="${x.link}" target="_blank" rel="noopener" class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
+            <div class="relative">
+              <img src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />
+            </div>
+            <div class="p-4">
+              <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
+              <h3 class="text-lg font-semibold mt-1 line-clamp-2">${x.title}</h3>
+            </div>
+          </a>`;
+      }
+
+      highlightGrid.innerHTML = `
+        <div class="lg:col-span-2">${colA}</div>
+        <div class="space-y-4">${smallCard(b)}${smallCard(c)}</div>
+      `;
+    }
+
+    function renderList(items) {
+      listEl.innerHTML = items.map(it => {
+        const img = it.image ? `<img data-role="thumb" src="${it.image}" alt="" class="w-28 h-28 rounded-md object-cover">`
+                             : `<div class="w-28 h-28 rounded-md bg-slate-100 flex items-center justify-center text-xs text-slate-400">Sem imagem</div>`;
+        return `
+        <article class="rounded-xl border border-slate-200 bg-white hover:shadow-sm transition p-4" data-hash="${hash(it)}">
+          <a href="${it.link}" target="_blank" rel="noopener" class="block">
+            <div class="flex items-start gap-4">
+              <div class="shrink-0">${img}</div>
+              <div class="min-w-0">
+                <div class="text-sm text-slate-500">${it.source} • ${formatDate(it.pubDate)}</div>
+                <h3 class="text-lg font-semibold mb-1">${it.title}</h3>
+                <p class="text-sm text-slate-700 line-clamp-3">${(it.description || '').replace(/</g,'&lt;')}</p>
+              </div>
+            </div>
+          </a>
+        </article>`;
+      }).join('');
     }
 
     function render() {
       const items = applyFilters(ALL_ITEMS);
       emptyStateEl.classList.toggle('hidden', items.length > 0);
 
-      // Destaques = primeiros itens recentes com imagem
-      const withImg = items.filter(x => !!x.image);
-      renderHighlights(withImg);
+      // Destaques = subset recente com imagem
+      const sorted = [...items].sort((a,b) => b.pubDate - a.pubDate);
+      renderHighlights(sorted);
 
-      listEl.innerHTML = items.map(it => `
-        <article class="rounded-xl border border-slate-200 bg-white hover:shadow-sm transition p-4">
-          <a href="${it.link}" target="_blank" rel="noopener" class="block">
-            <div class="flex items-start gap-4">
-              <div class="w-24 h-24 shrink-0 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center">
-                ${it.image ? `<img src="${it.image}" alt="" class="w-full h-full object-cover">` : `<div class="text-slate-400 text-sm">Sem imagem</div>`}
-              </div>
-              <div class="min-w-0">
-                <div class="text-sm text-slate-500">${it.source} • ${formatDate(it.pubDate)}</div>
-                <h3 class="text-lg font-semibold mb-1">${it.title}</h3>
-                <div class="card-desc text-sm text-slate-700 line-clamp-4">${(it.description || '').replace(/</g,'&lt;')}</div>
-              </div>
-            </div>
-          </a>
-        </article>
-      `).join('');
+      // Lista geral
+      renderList(sorted);
     }
 
     // ========= Fluxo principal =========
@@ -368,16 +402,18 @@
         }
         done++;
         updateProgress(Math.round(done * 100 / Math.max(1,total)));
-        render(); // render parcial
+        render(); // parcial
       });
 
       await Promise.all(tasks);
       ALL_ITEMS.sort((a, b) => b.pubDate - a.pubDate);
       render();
+
+      // Tentar preencher imagens faltantes (lazy) sem travar UX
+      tryFillMissingImages(ALL_ITEMS, 12).then(() => render());
+
       setStatus('Pronto');
-      setTimeout(() => {
-        overlay.style.display = 'none';
-      }, 300); // deixa a barra chegar a 100%
+      setTimeout(() => { overlay.style.display = 'none'; }, 200);
     }
 
     // ========= Modal / Segurança simples =========
@@ -398,16 +434,15 @@
       ul.innerHTML = '';
       SOURCES.forEach((s, idx) => {
         const li = document.createElement('li');
-        li.className = "flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2";
+        li.className = "flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-3 py-2";
         li.innerHTML = `
           <div class="min-w-0">
             <div class="font-medium truncate">${s.name}</div>
             <div class="text-xs text-slate-500 truncate">${s.url}</div>
           </div>
-          <button data-i="${idx}" class="btn-rem rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">
+          <button data-i="${idx}" class="btn-rem rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">
             Remover
-          </button>
-        `;
+          </button>`;
         ul.appendChild(li);
       });
       ul.querySelectorAll('.btn-rem').forEach(btn => {
@@ -416,7 +451,7 @@
           const next = [...SOURCES.slice(0,i), ...SOURCES.slice(i+1)];
           saveSources(next);
           mountSourcesList();
-          loadAll(); // recarrega com fontes atualizadas
+          loadAll();
         });
       });
     }
@@ -436,9 +471,7 @@
 
     // filtros
     sourceFilter.addEventListener('change', render);
-    searchInput.addEventListener('input', () => {
-      render();
-    });
+    searchInput.addEventListener('input', render);
 
     // boot
     (async function init() {
