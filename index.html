@@ -1,271 +1,513 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TMA News — Portal de Notícias (Resiliente)</title>
+  <meta charset="utf-8" />
+  <title>TMA News</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Estilos adicionais -->
   <style>
-    .bar-red{height:3px;background-image:linear-gradient(to right,#d10,#f33)}
-    #progressBar{transition:width .2s ease}
-    .line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-    .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-    .shadow-soft{box-shadow:0 8px 24px rgba(0,0,0,.06)}
+    dialog::backdrop { backdrop-filter: blur(1px); }
+    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .shadow-soft { box-shadow: 0 8px 24px rgba(0,0,0,.06); }
+    .bar-red { background-image: linear-gradient(to right, #d10, #f33); height: 3px; }
+    #progressBar { transition: width .25s ease; }
+    .ph { background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); }
+  
+    @media (min-width: 1024px) {
+      /* Ajuste layout 1x2 dos destaques: 1 grande à esquerda + 2 menores alinhados à direita */
+      #highlightGrid.grid {
+        grid-template-columns: 2fr 1.3fr !important;
+        align-items: stretch;
+      }
+      #highlightGrid.grid > div {
+        height: 100%;
+      }
+      #highlightGrid .side-stack {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        gap: 1rem;
+        height: 100%;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
+  <!-- Loading Overlay (logo + barra, fundo branco) -->
   <div id="loadingOverlay" class="fixed inset-0 z-[100] grid place-items-center bg-white">
     <div class="w-[92vw] max-w-md text-center">
       <img src="logo-escudo.png" alt="Logo" class="mx-auto w-28 h-28 object-contain mb-4" />
-      <h1 class="text-2xl font-semibold mb-4">TMA News</h1>
-      <div class="w-full text-left">
-        <div class="flex justify-between text-sm mb-1">
-          <span>Status</span><span id="progressPct">0%</span>
-        </div>
-        <div class="h-3 w-full rounded-full bg-slate-200 overflow-hidden">
-          <div id="progressBar" class="h-3 w-0 bg-red-600"></div>
-        </div>
-        <p id="statusText" class="text-xs text-slate-600 mt-2">Inicializando…</p>
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">TMA News</h1>
+      <p id="loadingStatus" class="text-slate-500 mb-4">Carregando notícias…</p>
+      <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+        <div id="progressBar" class="bar-red w-0"></div>
       </div>
+      <p class="text-xs text-slate-400 mt-2">Atualizando fontes e preparando os destaques para você.</p>
     </div>
   </div>
 
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
-    <div class="bar-red w-full"></div>
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="flex items-center justify-between py-3">
-        <div class="flex items-center gap-3">
-          <img src="logo-escudo.png" class="w-8 h-8"/>
-          <span class="text-xl font-bold">TMA News</span>
+  <div class="min-h-screen">
+    <!-- Top bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="flex items-center justify-between py-3">
+          <div class="flex items-center gap-3">
+            <img src="logo-escudo.png" alt="Logo" class="w-9 h-9" />
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-semibold text-lg tracking-tight">TMA News</span>
+                <span class="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full uppercase">Beta</span>
+              </div>
+              <p class="text-xs text-slate-500">Seu hub rápido de notícias das principais fontes.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <a href="https://www.instagram.com/tma.news" target="_blank" rel="noopener"
+               class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-400 text-white shadow-soft hover:scale-105 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Z" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+              </svg>
+            </a>
+          </div>
         </div>
-        <div class="flex items-center gap-2 w-full max-w-xl">
-          <input id="searchInput" class="w-full rounded-md border px-3 py-2 text-sm" placeholder="Pesquisar…"/>
-          <select id="sourceFilter" class="rounded-md border px-3 py-2 text-sm">
-            <option value="__all__">Todas as fontes</option>
-          </select>
-          <button id="btnSettings" class="rounded-md border px-3 py-2 text-sm">Fontes</button>
-        </div>
-      </div>
-    </div>
-  </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-6">
-    <section class="mb-8">
-      <div id="highlightGrid" class="grid grid-cols-1 lg:grid-cols-3 lg:[grid-template-rows:repeat(2,minmax(0,1fr))] gap-4"></div>
-    </section>
-    <section>
-      <div id="list" class="grid grid-cols-1 gap-4"></div>
-      <p id="emptyState" class="text-slate-600 text-center py-12 hidden">Nenhuma notícia.</p>
-    </section>
-  </main>
-
-  <script>
-    const LS_KEY="tma_news_sources_v1";
-    const overlay=document.getElementById('loadingOverlay');
-    const progressBar=document.getElementById('progressBar');
-    const progressPct=document.getElementById('progressPct');
-    const statusText=document.getElementById('statusText');
-    const sourceFilter=document.getElementById('sourceFilter');
-    const searchInput=document.getElementById('searchInput');
-    const highlightGrid=document.getElementById('highlightGrid');
-    const listEl=document.getElementById('list');
-    const emptyState=document.getElementById('emptyState');
-    let SOURCES=[], ALL_ITEMS=[];
-
-    const SOURCE_LOGOS={
-      "G1":"https://g1.globo.com/favicon.ico",
-      "Folha":"https://www.folha.uol.com.br/favicon.ico",
-      "BBC Brasil":"https://www.bbc.com/favicon.ico",
-      "TeleSíntese":"https://telesintese.com.br/wp-content/uploads/2020/02/cropped-favicon-192x192.png",
-      "TELETIME":"https://teletime.com.br/wp-content/uploads/2020/02/cropped-favicon-192x192.png"
-    };
-
-    function defaultSources(){
-      return [
-        {name:"TeleSíntese",url:"https://telesintese.com.br/feed/" },
-        {name:"TELETIME",url:"https://teletime.com.br/feed/" },
-        {name:"G1",url:"https://g1.globo.com/rss/g1/" },
-        {name:"Folha",url:"https://feeds.folha.uol.com.br/emcimadahora/rss091.xml"},
-        {name:"BBC Brasil",url:"https://feeds.bbci.co.uk/portuguese/rss.xml"}
-      ];
-    }
-    function loadSources(){
-      try{
-        const raw=localStorage.getItem(LS_KEY);
-        const data=raw?JSON.parse(raw):null;
-        return Array.isArray(data)&&data.length?data:defaultSources();
-      }catch{return defaultSources();}
-    }
-    function populateSourceFilter(){
-      sourceFilter.innerHTML='<option value="__all__">Todas as fontes</option>';
-      for(const s of SOURCES){
-        const o=document.createElement('option'); o.value=s.name; o.textContent=s.name; sourceFilter.appendChild(o);
-      }
-    }
-    function setStatus(msg){ statusText.textContent=msg; }
-    function updateProgress(p){ p=Math.max(0,Math.min(100, p|0)); progressBar.style.width=p+'%'; progressPct.textContent=p+'%'; }
-
-    // Watchdog: if progress <5% after 5s, bump to 10%
-    setTimeout(()=>{ const w=progressBar.style.width||'0%'; if(parseInt(w)<5){ updateProgress(10); setStatus('Iniciando fontes…'); } }, 5000);
-    // Auto-dismiss after 15s no matter what
-    setTimeout(()=>{ if(getComputedStyle(overlay).display!=='none'){ setStatus('Carregando em segundo plano…'); overlay.style.display='none'; } }, 15000);
-
-    const timeout = (ms)=> new Promise((_,rej)=> setTimeout(()=>rej(new Error('timeout')),ms));
-    async function fetchWithTimeout(url, ms=8000){
-      return Promise.race([ fetch(url), timeout(ms) ]);
-    }
-    async function fetchTextThroughProxies(url){
-      const attempts=[
-        async()=>{ const r=await fetchWithTimeout(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`); if(!r.ok)throw 0; const j=await r.json(); return j.contents; },
-        async()=>{ const r=await fetchWithTimeout(`https://cors.isomorphic-git.org/${url}`); if(!r.ok)throw 0; return await r.text(); },
-        async()=>{ const r=await fetchWithTimeout(`https://r.jina.ai/http://${url.replace(/^https?:\/\//,'')}`); if(!r.ok)throw 0; return await r.text(); }
-      ];
-      let last; for(const a of attempts){ try{ return await a(); }catch(e){ last=e; } }
-      throw last||new Error('proxy fail');
-    }
-    function fixEncoding(s){ if(!s||!s.includes('�'))return s; try{ const bytes=new Uint8Array(s.split('').map(ch=>ch.charCodeAt(0))); return new TextDecoder('iso-8859-1').decode(bytes);}catch{return s;} }
-    function resolveUrl(base, url){ try{ return new URL(url, base).href; }catch{ return url; } }
-
-    function parseRSS(xmlText, sourceName){
-      const parser=new DOMParser(); const xml=parser.parseFromString(xmlText,"text/xml");
-      const out=[];
-      xml.querySelectorAll("rss channel item").forEach(item=>{
-        const title=(item.querySelector("title")?.textContent||"(Sem título)").trim();
-        const link=(item.querySelector("link")?.textContent||"#").trim();
-        const pub=(item.querySelector("pubDate")?.textContent||"").trim();
-        const pubDate=pub?new Date(pub):new Date();
-        const desc=(item.querySelector("description")?.textContent||"").trim();
-        let image=item.querySelector('media\\:content')?.getAttribute('url')
-                 || item.querySelector('media\\:thumbnail')?.getAttribute('url')
-                 || item.querySelector('enclosure')?.getAttribute('url');
-        if(!image){
-          const html=(item.querySelector('content\\:encoded')?.textContent||desc);
-          const m=(html||"").match(/<img[^>]+src=["']([^"']+)["']/i);
-          if(m) image=m[1];
-        }
-        if(image) image=resolveUrl(link,image);
-        out.push({title:fixEncoding(title), link, pubDate, description:fixEncoding(desc), image, source:sourceName});
-      });
-      if(out.length) return out;
-      xml.querySelectorAll("feed entry").forEach(entry=>{
-        const title=(entry.querySelector("title")?.textContent||"(Sem título)").trim();
-        const link=entry.querySelector("link[rel='alternate']")?.getAttribute('href')||entry.querySelector("link")?.getAttribute('href')||"#";
-        const pub=entry.querySelector("updated")?.textContent||entry.querySelector("published")?.textContent||"";
-        const pubDate=pub?new Date(pub):new Date();
-        const sum=(entry.querySelector("summary")?.textContent||entry.querySelector("content")?.textContent||"").trim();
-        let image=entry.querySelector('media\\:content')?.getAttribute('url')||entry.querySelector('media\\:thumbnail')?.getAttribute('url');
-        if(image) image=resolveUrl(link,image);
-        out.push({title:fixEncoding(title), link, pubDate, description:fixEncoding(sum), image, source:sourceName});
-      });
-      return out;
-    }
-
-    function formatDate(d){ try{ return new Intl.DateTimeFormat('pt-BR',{dateStyle:'medium',timeStyle:'short'}).format(d);}catch{return d.toLocaleString();} }
-    function hash(it){ return btoa(unescape(encodeURIComponent((it.link||'')+'|'+(it.title||'')))).replace(/=+$/,''); }
-    function imgFor(it){ const src=it.image || SOURCE_LOGOS[it.source]; if(!src) return `<div class="w-28 h-28 bg-slate-200 rounded-md"></div>`; return `<img data-role="thumb" referrerpolicy="no-referrer" src="${src}" class="w-28 h-28 rounded-md object-cover">`; }
-
-    function renderHighlights(items){
-      const withImg=items.filter(x=>!!x.image);
-      const a=withImg[0], b=withImg[1], c=withImg[2];
-      function hero(x){
-        if(!x) return '';
-        const id=hash(x);
-        return `<a href="${x.link}" target="_blank" rel="noopener"
-                  class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2 lg:row-span-2 h-full">
-                  <div class="relative h-64 lg:h-full">
-                    <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" class="w-full h-full object-cover"/>
-                  </div>
-                  <div class="p-4">
-                    <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
-                    <h2 class="text-2xl font-bold mt-1 mb-2 line-clamp-2">${x.title}</h2>
-                    <p class="text-slate-700 line-clamp-3">${(x.description||'').replace(/</g,'&lt;')}</p>
-                  </div>
-                </a>`;
-      }
-      function small(x){
-        if(!x) return '';
-        const id=hash(x);
-        return `<a href="${x.link}" target="_blank" rel="noopener"
-                  class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 h-full">
-                  <div class="relative h-40">
-                    <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" class="w-full h-full object-cover"/>
-                  </div>
-                  <div class="p-4">
-                    <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
-                    <h3 class="text-lg font-semibold mt-1 line-clamp-2">${x.title}</h3>
-                  </div>
-                </a>`;
-      }
-      highlightGrid.innerHTML = `${hero(a)}${small(b)}${small(c)}`;
-    }
-
-    function render(){
-      let items=[...ALL_ITEMS].sort((a,b)=>b.pubDate-a.pubDate);
-      if(sourceFilter.value==='__all__'){
-        const withImg=items.filter(x=>x.image), without=items.filter(x=>!x.image);
-        items=withImg.concat(without);
-      }else{
-        items=items.filter(x=>x.source===sourceFilter.value);
-      }
-      const term=searchInput.value.trim().toLowerCase();
-      if(term) items=items.filter(x=>(x.title||'').toLowerCase().includes(term)||(x.description||'').toLowerCase().includes(term));
-
-      emptyState.classList.toggle('hidden', items.length>0);
-      renderHighlights(items);
-      listEl.innerHTML = items.slice(0,20).map(it=>`
-        <article class="rounded-xl border border-slate-200 bg-white p-4">
-          <a href="${it.link}" target="_blank" rel="noopener" class="block">
-            <div class="flex items-start gap-4">
-              <div class="shrink-0">${imgFor(it)}</div>
-              <div class="min-w-0">
-                <div class="text-sm text-slate-500">${it.source} • ${formatDate(it.pubDate)}</div>
-                <h3 class="text-lg font-semibold mb-1">${it.title}</h3>
-                <p class="text-sm text-slate-700 line-clamp-3">${(it.description||'').replace(/</g,'&lt;')}</p>
+        <!-- Search + filtros -->
+        <div class="pb-4">
+          <div class="flex flex-col md:flex-row md:items-center gap-3">
+            <!-- Campo de busca -->
+            <div class="flex-1">
+              <label class="sr-only" for="searchInput">Pesquisar notícias</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/>
+                  </svg>
+                </span>
+                <input
+                  id="searchInput"
+                  type="text"
+                  placeholder="Pesquisar (título ou texto)…"
+                  class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-400 text-sm"
+                />
               </div>
             </div>
-          </a>
-        </article>
-      `).join('');
+
+            <!-- Seleção de fontes -->
+            <div class="flex gap-2">
+              <div>
+                <label class="sr-only" for="sourceFilter">Filtrar por fonte</label>
+                <select
+                  id="sourceFilter"
+                  class="min-w-[140px] px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-400">
+                  <option value="__all__">Todas as fontes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Conteúdo principal -->
+    <main class="max-w-6xl mx-auto px-4 py-6">
+      <!-- Destaques -->
+      <section id="highlights" class="mb-8">
+        <div id="highlightGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- Lista de notícias -->
+      <section>
+        <div id="emptyState" class="hidden text-center py-16">
+          <p class="text-slate-500">Nenhuma notícia encontrada para os filtros atuais.</p>
+        </div>
+        <div id="newsList" class="space-y-3"></div>
+        <div id="skeletonContainer" class="mt-4 space-y-3"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal de fontes (admin) -->
+  <dialog id="sourcesDialog" class="rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-[92vw] p-0">
+    <form method="dialog" class="p-5 border-b border-slate-200 flex items-center justify-between">
+      <h2 class="font-semibold text-slate-800">Gerenciar Fontes</h2>
+      <button type="submit" class="text-slate-400 hover:text-slate-600">
+        <span class="sr-only">Fechar</span>
+        ✕
+      </button>
+    </form>
+    <div class="p-5 space-y-4">
+      <p class="text-sm text-slate-500">Aqui você pode visualizar as fontes atualmente configuradas.</p>
+      <ul id="sourcesList" class="space-y-2 text-sm"></ul>
+      <p class="text-xs text-slate-400">*Por enquanto, a edição das fontes é feita diretamente no código.</p>
+    </div>
+    <form method="dialog" class="p-4 border-t border-slate-200 text-right">
+      <button type="submit" class="px-4 py-1.5 text-sm rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50">Fechar</button>
+    </form>
+  </dialog>
+
+  <!-- Botão flutuante para abrir modal de fontes (admin) -->
+  <button
+    id="adminButton"
+    class="fixed bottom-4 right-4 z-40 inline-flex items-center justify-center w-11 h-11 rounded-full bg-white border border-slate-200 shadow-soft text-slate-500 hover:text-slate-700 hover:shadow-lg transition"
+    title="Gerenciar fontes (admin)">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.75a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5ZM4.5 12h.75M18.75 12h.75M12 18.75v.75M12 4.5V3.75M7.22 7.22l-.53-.53M17.31 17.31l-.53-.53M7.22 16.78l-.53.53M17.31 6.69l-.53.53"/>
+    </svg>
+  </button>
+
+  <!-- Botão flutuante do WhatsApp -->
+  <a
+    href="https://wa.me/5535998993464?text=Ol%C3%A1%2C%20tenho%20interesse%20nos%20servi%C3%A7os%20da%20TMA%20IPTV."
+    target="_blank"
+    rel="noopener"
+    class="fixed bottom-4 left-4 z-40 inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-500 text-white shadow-soft hover:bg-emerald-600 transition"
+    title="Fale pelo WhatsApp">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 32 32">
+      <path fill="currentColor" d="M16.01 5C10.49 5 6 9.48 6 14.99c0 2.17.63 3.86 1.71 5.22L6 27l6.96-1.71c1.27.7 2.74 1.1 4.3 1.1C21.52 26.39 26 21.9 26 16.39 26.01 10.89 21.53 5 16.01 5Zm0 19.74c-1.34 0-2.64-.36-3.77-1.03l-.27-.16-4.13 1.01 1.1-4.02-.18-.28A7.9 7.9 0 0 1 8.1 15c0-4.34 3.55-7.88 7.91-7.88 4.35 0 7.9 3.54 7.9 7.88-.01 4.35-3.56 7.89-7.9 7.89Zm4.33-5.9c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.77.94-.14.16-.29.18-.53.06-.24-.12-1.01-.37-1.93-1.18-.71-.62-1.19-1.39-1.33-1.63-.14-.24-.01-.37.11-.49.12-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.43-.06-.12-.54-1.3-.74-1.78-.19-.46-.39-.4-.53-.41h-.45c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.68 2.57 4.06 3.6.57.25 1.01.4 1.36.51.57.18 1.09.16 1.5.1.46-.07 1.42-.58 1.62-1.15.2-.57.2-1.05.14-1.15-.06-.1-.22-.16-.46-.28Z"/>
+    </svg>
+  </a>
+
+  <!-- Script principal -->
+  <script>
+    const SOURCE_LOGOS = {
+      'G1': 'https://s2-g1.glbimg.com/PhC0JtAfw_pHYqms4D3GRD5Wz1I=/0x0:1200x675/fit-in/1200x675/middle/smart/filters:strip_icc()/s.glbimg.com/og/rg/static/img/facebook/g1.png',
+      'UOL': 'https://conteudo.imguol.com.br/c/home/layout/camadas/logo-uol.jpg',
+      'BBC Brasil': 'https://ichef.bbci.co.uk/news/1024/branded_portuguese/173B2/production/_117544600_bbc_news_brasil_logo-nc.png',
+      'CNN Brasil': 'https://www.cnnbrasil.com.br/wp-content/themes/cnn/assets/img/logos/CNNBrasil-NoBox-Red.png',
+      'Folha de S.Paulo': 'https://static.poder360.com.br/2021/03/folha-de-sp.png',
+      'Estadão': 'https://www.estadao.com.br/hs-content/themes/estadao/assets/img/logos/estadao.png',
+      'R7': 'https://img.r7.com/assets/r7/img/social/r7-share-logo.png',
+      'O Globo': 'https://s2.glbimg.com/lkqUNBM8DT6vKrrO5gYv7FpC18I=/0x0:1200x630/fit-in/1200x630/middle/smart/filters:strip_icc()/s.glbimg.com/og/rg/static/img/facebook/oglobo.png'
+    };
+
+    const SOURCES = [
+      { name: 'BBC Brasil', url: 'https://feeds.bbci.co.uk/portuguese/rss.xml', tag: 'bbc' },
+      { name: 'G1', url: 'https://g1.globo.com/dynamo/rss2.xml', tag: 'g1' },
+      { name: 'UOL', url: 'https://noticias.uol.com.br/feed/noticias.xml', tag: 'uol' },
+      { name: 'CNN Brasil', url: 'https://www.cnnbrasil.com.br/feed', tag: 'cnn' }
+    ];
+
+    const INITIAL_COUNT = 20;
+    const BATCH_SIZE = 10;
+    const MAX_SKELETONS = 30;
+
+    let ALL_ITEMS = [];
+    let VISIBLE_ITEMS = [];
+    let FILTER_TEXT = '';
+    let FILTER_SOURCE = '__all__';
+
+    const searchInput = document.getElementById('searchInput');
+    const sourceFilter = document.getElementById('sourceFilter');
+    const newsList = document.getElementById('newsList');
+    const highlightGrid = document.getElementById('highlightGrid');
+    const emptyStateEl = document.getElementById('emptyState');
+    const skeletonContainer = document.getElementById('skeletonContainer');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const progressBar = document.getElementById('progressBar');
+    const loadingStatus = document.getElementById('loadingStatus');
+    const sourcesDialog = document.getElementById('sourcesDialog');
+    const sourcesList = document.getElementById('sourcesList');
+    const adminButton = document.getElementById('adminButton');
+
+    function setStatus(msg) {
+      loadingStatus.textContent = msg;
     }
 
-    async function fetchRSS(source){
-      let xml = await fetchTextThroughProxies(source.url);
-      return parseRSS(xml, source.name);
+    function updateProgress(percent) {
+      progressBar.style.width = percent + '%';
     }
 
-    async function loadAll(){
-      try{
-        overlay.style.display='grid';
-        updateProgress(5); setStatus('Iniciando fontes…');
-        ALL_ITEMS=[];
-        const total = (SOURCES && SOURCES.length) ? SOURCES.length : 1;
-        let done=0;
-        const tasks = SOURCES.map(async (s)=>{
-          try{
-            const items=(await fetchRSS(s)).map(x=>({...x}));
-            ALL_ITEMS=ALL_ITEMS.concat(items);
-          }catch(e){
-            console.warn('Erro fonte', s?.name, e);
-          }finally{
-            done++; updateProgress(Math.round(done*100/total)); setStatus(`Carregado ${done}/${total}`);
-            if(done===1) render();
-          }
-        });
-        await Promise.allSettled(tasks);
-        render();
-      }finally{
-        setStatus('Pronto');
-        setTimeout(()=>{ overlay.style.display='none'; }, 200);
+    function normalizeText(str) {
+      if (!str) return '';
+      return str.replace(/<\/?[^>]+(>|$)/g, '').replace(/\s+/g, ' ').trim();
+    }
+
+    function formatDate(date) {
+      try {
+        const d = new Date(date);
+        if (isNaN(d)) return '';
+        return d.toLocaleString('pt-BR', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).replace('.', '');
+      } catch {
+        return '';
       }
     }
 
-    (async function init(){
-      SOURCES = loadSources();
+    async function fetchRSS(source) {
+      const url = source.url;
+      const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+      const data = await response.json();
+      const text = data.contents;
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(text, 'text/xml');
+      const items = Array.from(xml.querySelectorAll('item')).slice(0, 60);
+      return items.map(item => {
+        const title = item.querySelector('title')?.textContent || '';
+        const link = item.querySelector('link')?.textContent || '';
+        const description = item.querySelector('description')?.textContent || '';
+        const pubDate = item.querySelector('pubDate')?.textContent || '';
+        const enclosure = item.querySelector('enclosure');
+        const image = enclosure?.getAttribute('url') || null;
+        return {
+          source: source.name,
+          title,
+          link,
+          description,
+          pubDate: pubDate ? new Date(pubDate) : new Date(),
+          image
+        };
+      });
+    }
+
+    function applyFilters(items) {
+      const term = FILTER_TEXT.trim().toLowerCase();
+      const src = FILTER_SOURCE;
+      return items.filter(it => {
+        const matchesSource = (src === '__all__' || it.source === src);
+        const matchesSearch = !term ||
+          (it.title && it.title.toLowerCase().includes(term)) ||
+          (it.description && it.description.toLowerCase().includes(term));
+        return matchesSource && matchesSearch;
+      });
+    }
+
+    function hash(it) { return btoa(unescape(encodeURIComponent((it.link||'') + '|' + (it.title||'')))).replace(/=+$/,''); }
+
+    function renderHighlights(items) {
+      // Destaques 1x2: 1 grande à esquerda (col-span-2) + 2 pequenos empilhados à direita
+      const withImg = items.filter(x => !!x.image);
+      const a = withImg[0], b = withImg[1], c = withImg[2];
+      function hero(x) {
+        if (!x) return '';
+        const id = hash(x);
+        return `
+          <a href="${x.link}" target="_blank" rel="noopener"
+             class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2">
+            <div class="relative">
+              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />
+            </div>
+            <div class="p-4">
+              <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
+              <h2 class="text-2xl font-bold mt-1 mb-2 leading-tight">${x.title}</h2>
+              <p class="text-slate-700 line-clamp-3">${(x.description||'').replace(/</g,'&lt;')}</p>
+            </div>
+          </a>`;
+      }
+      function smallCard(x) {
+        if (!x) return '';
+        const id = hash(x);
+        return `
+          <a href="${x.link}" target="_blank" rel="noopener" class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
+            <div class="relative">
+              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />
+            </div>
+            <div class="p-4">
+              <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
+              <h3 class="text-lg font-semibold mt-1 line-clamp-2">${x.title}</h3>
+            </div>
+          </a>`;
+      }
+      // Monta grid 1x2 com alturas alinhadas entre o destaque grande e os dois menores
+      highlightGrid.innerHTML = `
+        <div class="lg:col-span-2">${hero(a)}</div>
+        <div class="side-stack">
+          ${smallCard(b)}
+          ${smallCard(c)}
+        </div>
+      `;
+    }
+
+    function imgTagForItem(it) {
+      const logo = SOURCE_LOGOS[it.source] || null;
+      if (it.image) {
+        const id = hash(it);
+        return `<img data-hero="${id}" referrerpolicy="no-referrer" src="${it.image}" alt="" class="w-full h-48 md:h-44 object-cover group-hover:opacity-95 transition" />`;
+      }
+      if (logo) {
+        return `<div class="ph flex items-center justify-center w-full h-14"><img src="${logo}" alt="${it.source}" class="h-8 object-contain opacity-80" /></div>`;
+      }
+      return `<div class="ph flex items-center justify-center w-full h-14 text-slate-500 text-xs uppercase tracking-wide">${it.source}</div>`;
+    }
+
+    function cardHTML(it) {
+      const id = hash(it);
+      return `
+        <article class="group rounded-xl bg-white border border-slate-200 shadow-soft overflow-hidden">
+          <a href="${it.link}" target="_blank" rel="noopener" class="flex flex-col md:flex-row">
+            <div class="md:w-48 md:flex-shrink-0">
+              ${imgTagForItem(it)}
+            </div>
+            <div class="flex-1 p-3 md:p-4">
+              <div class="flex items-center gap-2 text-xs text-slate-500 mb-1.5">
+                <span class="inline-flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                  <span>${it.source}</span>
+                </span>
+                <span>•</span>
+                <span>${formatDate(it.pubDate)}</span>
+              </div>
+              <h2 class="text-base md:text-lg font-semibold text-slate-900 mb-1 line-clamp-2 group-hover:text-sky-600 transition">
+                ${it.title}
+              </h2>
+              <p class="text-sm text-slate-600 line-clamp-3">
+                ${(it.description || it.content || '').replace(/</g,'&lt;')}
+              </p>
+            </div>
+          </a>
+        </article>`;
+    }
+
+    const listEl = newsList;
+
+    function renderListInitial(items) {
+      listEl.innerHTML = '';
+      VISIBLE_ITEMS = items.slice(0, INITIAL_COUNT);
+      listEl.innerHTML = VISIBLE_ITEMS.map(cardHTML).join('');
+      renderSkeletons(Math.min(MAX_SKELETONS, items.length - INITIAL_COUNT));
+    }
+
+    function appendNextBatch(items) {
+      const already = VISIBLE_ITEMS.length;
+      if (already >= items.length) return;
+      const next = items.slice(already, already + BATCH_SIZE);
+      VISIBLE_ITEMS = VISIBLE_ITEMS.concat(next);
+      listEl.insertAdjacentHTML('beforeend', next.map(cardHTML).join(''));
+      renderSkeletons(Math.min(MAX_SKELETONS, items.length - VISIBLE_ITEMS.length));
+    }
+
+    function renderSkeletons(count) {
+      skeletonContainer.innerHTML = '';
+      if (count <= 0) return;
+      const skeleton = `
+        <div class="animate-pulse rounded-xl bg-white border border-slate-200 overflow-hidden">
+          <div class="flex">
+            <div class="w-44 h-32 bg-slate-200/60"></div>
+            <div class="flex-1 p-3 space-y-2">
+              <div class="h-3 bg-slate-200/70 rounded w-2/3"></div>
+              <div class="h-3 bg-slate-200/60 rounded w-5/6"></div>
+              <div class="h-3 bg-slate-200/50 rounded w-4/5"></div>
+            </div>
+          </div>
+        </div>`;
+      skeletonContainer.innerHTML = Array.from({ length: Math.min(count, 5) }).map(() => skeleton).join('');
+    }
+
+    function render() {
+      let items = applyFilters(ALL_ITEMS).sort((a,b) => b.pubDate - a.pubDate);
+      if (sourceFilter.value === '__all__') {
+        const withImg = items.filter(x => x.image);
+        const withoutImg = items.filter(x => !x.image);
+        items = withImg.concat(withoutImg);
+      }
+      emptyStateEl.classList.toggle('hidden', items.length > 0);
+      renderHighlights(items);
+      renderListInitial(items);
+      window.onscroll = () => {
+        const nearBottom = window.innerHeight + window.scrollY >= (document.body.offsetHeight - 600);
+        if (nearBottom) appendNextBatch(items);
+      };
+    }
+
+    async function loadAll() {
+      loadingOverlay.style.display = 'grid';
+      setStatus('Carregando notícias…');
+      ALL_ITEMS = [];
+      const total = SOURCES.length;
+      let done = 0;
+      updateProgress(0);
+
+      const tasks = SOURCES.map(async (s) => {
+        try {
+          const items = (await fetchRSS(s)).map(x => ({ ...x, description: normalizeText(x.description) }));
+          ALL_ITEMS = ALL_ITEMS.concat(items);
+        } catch (e) { console.warn('Erro em', s.name, e); }
+        done++; updateProgress(Math.round(done * 100 / Math.max(1,total)));
+        if (done === 1) render();
+      });
+
+      await Promise.all(tasks);
+      render();
+
+      tryFillMissingImages(ALL_ITEMS, 64).then(() => {});
+      setStatus('Pronto');
+      setTimeout(() => { loadingOverlay.style.display = 'none'; }, 150);
+    }
+
+    function populateSourceFilter() {
+      SOURCES.forEach(src => {
+        const opt = document.createElement('option');
+        opt.value = src.name;
+        opt.textContent = src.name;
+        sourceFilter.appendChild(opt);
+      });
+    }
+
+    function populateSourcesModal() {
+      sourcesList.innerHTML = '';
+      SOURCES.forEach(src => {
+        const li = document.createElement('li');
+        li.textContent = `${src.name} - ${src.url}`;
+        li.className = "flex items-center gap-2 text-slate-700";
+        sourcesList.appendChild(li);
+      });
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      FILTER_TEXT = e.target.value;
+      render();
+    });
+
+    sourceFilter.addEventListener('change', (e) => {
+      FILTER_SOURCE = e.target.value;
+      render();
+    });
+
+    adminButton.addEventListener('click', () => {
+      const pass = prompt('Área restrita. Informe a senha do administrador:');
+      if (pass === '@mudar') {
+        populateSourcesModal();
+        sourcesDialog.showModal();
+      } else if (pass) {
+        alert('Senha incorreta.');
+      }
+    });
+
+    async function tryFillMissingImages(items, limit = 50) {
+      const toFill = items.filter(x => !x.image).slice(0, limit);
+      if (!toFill.length) return;
+
+      try {
+        const resp = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.bbc.com/portuguese'));
+        const data = await resp.json();
+        const doc = new DOMParser().parseFromString(data.contents, 'text/html');
+        const imgs = Array.from(doc.querySelectorAll('img'));
+        const urls = imgs.map(img => img.src).filter(Boolean);
+
+        toFill.forEach((item, idx) => {
+          item.image = urls[idx % urls.length] || null;
+        });
+      } catch (err) {
+        console.warn('Falha ao buscar imagens de preenchimento', err);
+      }
+      render();
+    }
+
+    window.addEventListener('load', () => {
       populateSourceFilter();
-      await loadAll();
-      sourceFilter.addEventListener('change', render);
-      searchInput.addEventListener('input', render);
-    })();
+      loadAll();
+    });
   </script>
 </body>
 </html>
