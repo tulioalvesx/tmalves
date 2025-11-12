@@ -17,9 +17,25 @@
       display: grid; place-items:center; background: #25D366; box-shadow: 0 6px 24px rgba(0,0,0,.18); z-index: 60; }
     .whats-float img { width: 30px; height: 30px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.15)); }
     .whats-float:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(0,0,0,.25); transition: all .2s ease; }
+    /* Loading overlay */
+    #loadingOverlay { position: fixed; inset: 0; display:grid; place-items:center; background:#fff; z-index:70; }
+    .spinner { width: 42px; height: 42px; border: 4px solid #e5e7eb; border-top-color: #2563eb; border-radius: 9999px; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg) } }
+    .thumb { width: 84px; height: 84px; object-fit: cover; border-radius: .5rem; }
+    .thumb-hero { width: 120px; height: 120px; object-fit: cover; border-radius: .75rem; }
   </style>
 </head>
 <body class="bg-neutral-50 text-neutral-900">
+  <!-- Loading overlay -->
+  <div id="loadingOverlay">
+    <div class="flex flex-col items-center gap-4">
+      <img src="logo-escudo.png" alt="TMA CORP" class="w-20 h-20 rounded" />
+      <div class="spinner"></div>
+      <p class="text-sm text-neutral-500">Carregando notícias…</p>
+    </div>
+  </div>
+
+  <!-- Header -->
   <header class="sticky top-0 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
       <img src="logo-escudo.png" alt="TMA CORP" class="w-10 h-10 rounded" />
@@ -38,8 +54,9 @@
     </div>
   </header>
 
+  <!-- Top Bar: filtros e busca -->
   <section class="border-b bg-white">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+    <div class="max-w-7xl mx-auto px-4 py-3 grid grid-cols-1 md:grid-cols-3 gap-3 md:items-center">
       <div class="flex items-center gap-2 text-sm text-neutral-600">
         <span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500" id="led"></span><span id="statusText">Pronto</span></span>
         <span class="hidden md:inline">•</span>
@@ -49,17 +66,23 @@
         <select id="sourceFilter" class="px-3 py-2 text-sm rounded-lg border bg-white">
           <option value="">Todas as fontes</option>
         </select>
-        <input id="searchInput" type="search" placeholder="Buscar notícia…" class="px-3 py-2 text-sm rounded-lg border w-64 max-w-full" />
+      </div>
+      <div class="flex items-center gap-2">
+        <input id="searchInput" type="search" placeholder="Buscar notícia…" class="px-3 py-2 text-sm rounded-lg border w-full" />
+        <button id="searchBtn" class="px-3 py-2 text-sm rounded-lg border hover:bg-neutral-100">Pesquisar</button>
       </div>
     </div>
   </section>
 
+  <!-- Conteúdo -->
   <main class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Manchete -->
     <section>
       <h2 class="text-lg font-semibold mb-3">Manchetes</h2>
       <div id="hero" class="grid md:grid-cols-2 gap-4"></div>
     </section>
 
+    <!-- Lista de notícias -->
     <section class="mt-8">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-lg font-semibold">Últimas</h2>
@@ -72,6 +95,7 @@
       </div>
     </section>
 
+    <!-- Contato -->
     <section id="contato" class="max-w-3xl mx-auto bg-white p-6 mt-10 mb-10 rounded-xl shadow">
       <h2 class="text-xl font-semibold mb-4">Contato — TMA CORP</h2>
       <form action="mailto:tulio.alves@tmalves.com.br" method="POST" enctype="text/plain" class="space-y-3">
@@ -96,6 +120,7 @@
     </section>
   </main>
 
+  <!-- Rodapé -->
   <footer class="border-t bg-white">
     <div class="max-w-7xl mx-auto px-4 py-6 text-sm text-neutral-600 flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
       <p>© <span id="year"></span> TMA CORP • Curadoria automática de notícias de Telecom.</p>
@@ -103,18 +128,23 @@
     </div>
   </footer>
 
+  <!-- Floating WhatsApp -->
   <a class="whats-float" href="https://wa.me/5535998993464" target="_blank" aria-label="Falar no WhatsApp">
     <img src="WhatsApp-icone.png" alt="WhatsApp" />
   </a>
 
-  <dialog id="settingsModal" class="backdrop:bg-black/40 rounded-xl p-0 w-[680px] max-w-[92vw]">
+  <!-- Modal de Fontes (protegido) -->
+  <dialog id="settingsModal" class="backdrop:bg-black/40 rounded-xl p-0 w-[720px] max-w-[92vw]">
     <form method="dialog" class="p-0">
       <div class="p-4 border-b bg-white rounded-t-xl flex items-center justify-between">
         <h3 class="font-semibold">Fontes de notícias (RSS)</h3>
-        <button class="px-2 py-1 text-sm rounded border">Fechar</button>
+        <div class="flex items-center gap-2">
+          <button id="exportHTML" class="px-3 py-1.5 text-sm rounded border" title="Baixar index.html com as fontes embarcadas">Salvar no HTML</button>
+          <button class="px-2 py-1 text-sm rounded border">Fechar</button>
+        </div>
       </div>
       <div class="p-4 space-y-4 bg-white">
-        <p class="text-sm text-neutral-600">Edite as fontes abaixo. Você pode colar outros RSS; o site buscará automaticamente. Dica: use <code>https://api.allorigins.win/raw?url=</code> se algum RSS bloquear CORS.</p>
+        <p class="text-sm text-neutral-600">Edite as fontes abaixo. Clique em <strong>Salvar no HTML</strong> para baixar um novo <code>index.html</code> contendo as fontes no código. Depois é só fazer commit no Git.</p>
         <div id="sourcesList" class="space-y-3"></div>
         <div class="flex items-center gap-2">
           <button id="addSource" type="button" class="px-3 py-2 text-sm rounded border">Adicionar fonte</button>
@@ -147,17 +177,27 @@
 
     const sourceFilter = document.getElementById('sourceFilter');
     const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
     const feedEl = document.getElementById('feed');
     const heroEl = document.getElementById('hero');
     const emptyEl = document.getElementById('emptyState');
     const countLabel = document.getElementById('countLabel');
+    const overlay = document.getElementById('loadingOverlay');
 
     function populateSourceFilter() {
       sourceFilter.innerHTML = '<option value="">Todas as fontes</option>' + SOURCES.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
     }
 
+    function extractImageFromHTML(html){
+      if (!html) return null;
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      const img = div.querySelector('img');
+      return img ? img.getAttribute('src') : null;
+    }
+
     async function fetchRSS(source) {
-      const target = wrapCORS(source.url); // força proxy para todas as fontes
+      const target = wrapCORS(source.url);
       const res = await fetch(target);
       if (!res.ok) throw new Error('Falha ao buscar: ' + source.name);
       const text = await res.text();
@@ -170,6 +210,7 @@
         link: it.querySelector('link')?.textContent?.trim() || '#',
         pubDate: new Date(it.querySelector('pubDate')?.textContent || it.querySelector('dc\:date')?.textContent || Date.now()),
         description: it.querySelector('description')?.textContent || '',
+        image: it.querySelector('media\:content, media\:thumbnail')?.getAttribute('url') || extractImageFromHTML(it.querySelector('description')?.textContent || ''),
         source: source
       }));
       if (!items.length) {
@@ -178,26 +219,35 @@
           link: it.querySelector('link')?.getAttribute('href') || '#',
           pubDate: new Date(it.querySelector('updated')?.textContent || it.querySelector('published')?.textContent || Date.now()),
           description: it.querySelector('summary')?.textContent || it.querySelector('content')?.textContent || '',
+          image: it.querySelector('media\:content, media\:thumbnail')?.getAttribute('url') || extractImageFromHTML(it.querySelector('content')?.textContent || ''),
           source: source
         }));
       }
       return items;
     }
 
-    function normalizeText(html) { const tmp = document.createElement('div'); tmp.innerHTML = html; return tmp.textContent || tmp.innerText || ''; }
+    function normalizeText(html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    }
 
     async function loadAll() {
       setStatus('Carregando…', true);
-      const promises = SOURCES.map(s => fetchRSS(s).catch((e)=>{ console.warn(e); return []; }));
+      const promises = SOURCES.map(s => fetchRSS(s).catch(()=>[]));
       const results = await Promise.all(promises);
-      ALL_ITEMS = results.flat().map(x=>({...x, description: normalizeText(x.description)})).sort((a,b)=> b.pubDate - a.pubDate);
+      ALL_ITEMS = results.flat().map(x=>({
+        ...x, description: normalizeText(x.description)
+      })).sort((a,b)=> b.pubDate - a.pubDate);
       render();
       setStatus('Pronto');
+      overlay.style.display = 'none';
     }
 
     function setStatus(msg, loading=false){
-      const el = document.getElementById('statusText'); el.textContent = msg;
-      const led = document.getElementById('led'); led.className = 'w-2 h-2 rounded-full ' + (loading ? 'bg-amber-500 pulse' : 'bg-emerald-500');
+      const el = document.getElementById('statusText');
+      el.textContent = msg;
+      document.getElementById('led').className = 'w-2 h-2 rounded-full ' + (loading ? 'bg-amber-500 pulse' : 'bg-emerald-500');
     }
 
     function render(){
@@ -214,40 +264,63 @@
     function safeURL(u){ try { return new URL(u).href } catch(e){ return '#' } }
 
     function cardHero(item){
+      const img = item.image || 'logo-escudo.png';
       return `
       <article class="rounded-2xl border bg-white overflow-hidden group">
         <a href="${safeURL(item.link)}" target="_blank" rel="noopener" class="block p-5">
-          <div class="text-xs text-neutral-500 mb-2 flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded-full bg-neutral-100">${item.source.name}</span>
-            <span>•</span>
-            <time>${timeAgo(item.pubDate)} atrás</time>
+          <div class="flex items-start gap-4">
+            <img src="${img}" alt="thumb" class="thumb-hero" onerror="this.src='logo-escudo.png'" />
+            <div class="flex-1">
+              <div class="text-xs text-neutral-500 mb-2 flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full bg-neutral-100">${item.source.name}</span>
+                <span>•</span>
+                <time>${timeAgo(item.pubDate)} atrás</time>
+              </div>
+              <h3 class="text-xl font-bold leading-snug group-hover:underline">${item.title}</h3>
+              <p class="mt-2 text-sm text-neutral-700 line-clamp-3">${item.description}</p>
+            </div>
           </div>
-          <h3 class="text-xl font-bold leading-snug group-hover:underline">${item.title}</h3>
-          <p class="mt-2 text-sm text-neutral-700 line-clamp-3">${item.description}</p>
         </a>
       </article>`;
     }
 
     function card(item){
+      const img = item.image || 'logo-escudo.png';
       return `
       <article class="rounded-xl border bg-white overflow-hidden group">
         <a href="${safeURL(item.link)}" target="_blank" rel="noopener" class="block p-4">
-          <div class="text-xs text-neutral-500 mb-1 flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded-full bg-neutral-100">${item.source.name}</span>
-            <span>•</span>
-            <time>${timeAgo(item.pubDate)} atrás</time>
+          <div class="flex items-start gap-3">
+            <img src="${img}" alt="thumb" class="thumb" onerror="this.src='logo-escudo.png'" />
+            <div class="flex-1">
+              <div class="text-xs text-neutral-500 mb-1 flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full bg-neutral-100">${item.source.name}</span>
+                <span>•</span>
+                <time>${timeAgo(item.pubDate)} atrás</time>
+              </div>
+              <h3 class="font-semibold leading-snug group-hover:underline line-clamp-2">${item.title}</h3>
+              <p class="mt-1 text-sm text-neutral-700 line-clamp-2">${item.description}</p>
+            </div>
           </div>
-          <h3 class="font-semibold leading-snug group-hover:underline line-clamp-2">${item.title}</h3>
-          <p class="mt-1 text-sm text-neutral-700 line-clamp-2">${item.description}</p>
         </a>
       </article>`;
     }
 
+    // Filtros & busca
+    sourceFilter.addEventListener('change', render);
+    searchInput.addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ e.preventDefault(); render(); } });
+    searchBtn.addEventListener('click', render);
+
+    // Modal protegido por senha simples
     const modal = document.getElementById('settingsModal');
     const openBtn = document.createElement('button');
     openBtn.textContent = 'Fontes';
     openBtn.className = 'px-3 py-2 text-sm rounded-lg border hover:bg-neutral-100 fixed bottom-4 left-4 bg-white z-40';
-    openBtn.addEventListener('click', ()=>{ renderSourcesForm(); modal.showModal(); });
+    openBtn.addEventListener('click', () => {
+      const u = prompt('Usuário:');
+      const p = u==='adm' ? prompt('Senha:') : '';
+      if (u==='adm' && p==='@mudar') { renderSourcesForm(); modal.showModal(); }
+      else alert('Acesso negado');
+    });
     document.body.appendChild(openBtn);
 
     document.getElementById('addSource').addEventListener('click', () => {
@@ -271,16 +344,40 @@
 
     function renderSourcesForm(){
       const box = document.getElementById('sourcesList');
-      box.innerHTML = SOURCES.map(s=>`
+      box.innerHTML = SOURCES.map((s,idx)=>`
         <div class="grid grid-cols-12 gap-2 items-center" data-source-row>
           <input class="col-span-2 px-2 py-2 text-sm border rounded" name="id" value="${s.id}" title="ID (único)" />
           <input class="col-span-4 px-2 py-2 text-sm border rounded" name="name" value="${s.name}" placeholder="Nome da fonte" />
-          <input class="col-span-6 px-2 py-2 text-sm border rounded" name="url" value="${s.url}" placeholder="URL do RSS" />
+          <input class="col-span-5 px-2 py-2 text-sm border rounded" name="url" value="${s.url}" placeholder="URL do RSS" />
+          <button type="button" data-remove="${idx}" class="col-span-1 px-2 py-2 text-sm rounded bg-red-50 border border-red-200 text-red-600">Remover</button>
         </div>
       `).join('');
+      box.querySelectorAll('[data-remove]').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const i = parseInt(e.currentTarget.getAttribute('data-remove'),10);
+          SOURCES.splice(i,1);
+          renderSourcesForm();
+        });
+      });
     }
 
+    // Baixar um index.html com as fontes embarcadas (para subir no Git)
+    document.getElementById('exportHTML').addEventListener('click', (e)=>{
+      e.preventDefault();
+      const current = JSON.stringify(SOURCES).replace(/</g,'\u003c');
+      const html = document.documentElement.outerHTML.replace(/const DEFAULT_SOURCES = [\s\S]*?];/, `const DEFAULT_SOURCES = ${current};`);
+      const blob = new Blob([html], {type:'text/html'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'index.html';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    // Auto-refresh
     setInterval(loadAll, REFRESH_MINUTES*60*1000);
+
+    // Boot
     populateSourceFilter();
     loadAll();
   </script>
