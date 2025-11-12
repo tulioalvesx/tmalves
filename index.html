@@ -13,7 +13,6 @@
     .news-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
     .pulse { animation: pulse 1.5s ease-in-out infinite; }
     @keyframes pulse { 0%{opacity:.6} 50%{opacity:1} 100%{opacity:.6} }
-    /* Floating WhatsApp */
     .whats-float { position: fixed; right: 1rem; bottom: 1rem; width: 58px; height: 58px; border-radius: 9999px;
       display: grid; place-items:center; background: #25D366; box-shadow: 0 6px 24px rgba(0,0,0,.18); z-index: 60; }
     .whats-float img { width: 30px; height: 30px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.15)); }
@@ -21,7 +20,6 @@
   </style>
 </head>
 <body class="bg-neutral-50 text-neutral-900">
-  <!-- Header -->
   <header class="sticky top-0 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
       <img src="logo-escudo.png" alt="TMA CORP" class="w-10 h-10 rounded" />
@@ -40,7 +38,6 @@
     </div>
   </header>
 
-  <!-- Top Bar: filtros e busca -->
   <section class="border-b bg-white">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
       <div class="flex items-center gap-2 text-sm text-neutral-600">
@@ -57,15 +54,12 @@
     </div>
   </section>
 
-  <!-- Conteúdo -->
   <main class="max-w-7xl mx-auto px-4 py-6">
-    <!-- Manchete -->
     <section>
       <h2 class="text-lg font-semibold mb-3">Manchetes</h2>
       <div id="hero" class="grid md:grid-cols-2 gap-4"></div>
     </section>
 
-    <!-- Lista de notícias -->
     <section class="mt-8">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-lg font-semibold">Últimas</h2>
@@ -78,7 +72,6 @@
       </div>
     </section>
 
-    <!-- Contato -->
     <section id="contato" class="max-w-3xl mx-auto bg-white p-6 mt-10 mb-10 rounded-xl shadow">
       <h2 class="text-xl font-semibold mb-4">Contato — TMA CORP</h2>
       <form action="mailto:tulio.alves@tmalves.com.br" method="POST" enctype="text/plain" class="space-y-3">
@@ -103,7 +96,6 @@
     </section>
   </main>
 
-  <!-- Rodapé -->
   <footer class="border-t bg-white">
     <div class="max-w-7xl mx-auto px-4 py-6 text-sm text-neutral-600 flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
       <p>© <span id="year"></span> TMA CORP • Curadoria automática de notícias de Telecom.</p>
@@ -111,12 +103,10 @@
     </div>
   </footer>
 
-  <!-- Floating WhatsApp -->
   <a class="whats-float" href="https://wa.me/5535998993464" target="_blank" aria-label="Falar no WhatsApp">
     <img src="WhatsApp-icone.png" alt="WhatsApp" />
   </a>
 
-  <!-- Modal de Fontes -->
   <dialog id="settingsModal" class="backdrop:bg-black/40 rounded-xl p-0 w-[680px] max-w-[92vw]">
     <form method="dialog" class="p-0">
       <div class="p-4 border-b bg-white rounded-t-xl flex items-center justify-between">
@@ -135,9 +125,6 @@
   </dialog>
 
   <script>
-    // ================================
-    // Configuração inicial
-    // ================================
     const DEFAULT_SOURCES = [
       { id: 'g1-tecnologia', name: 'G1 • Tecnologia', url: 'https://g1.globo.com/rss/g1/tecnologia/' },
       { id: 'teletime', name: 'TELETIME', url: 'https://teletime.com.br/feed/' },
@@ -145,17 +132,13 @@
       { id: 'anatel-noticias', name: 'Anatel (Notícias)', url: 'https://www.gov.br/anatel/pt-br/assuntos/noticias/@@RSS' },
       { id: 'convergencia', name: 'Convergência Digital', url: 'https://www.convergenciadigital.com.br/cgi/cgilua.exe/sys/start.htm?tpl=home&rss=1' }
     ];
-
     const wrapCORS = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
     const REFRESH_MINUTES = 15;
     document.getElementById('refreshEach').textContent = REFRESH_MINUTES;
     document.getElementById('year').textContent = new Date().getFullYear();
 
     const loadSources = () => {
-      try {
-        const saved = JSON.parse(localStorage.getItem('tm-news-sources'));
-        if (Array.isArray(saved) && saved.length) return saved;
-      } catch (e) {}
+      try { const saved = JSON.parse(localStorage.getItem('tm-news-sources')); if (Array.isArray(saved) && saved.length) return saved; } catch (e) {}
       return DEFAULT_SOURCES;
     };
     const saveSources = (arr) => localStorage.setItem('tm-news-sources', JSON.stringify(arr));
@@ -170,23 +153,22 @@
     const countLabel = document.getElementById('countLabel');
 
     function populateSourceFilter() {
-      sourceFilter.innerHTML = '<option value=\"\">Todas as fontes</option>' + SOURCES.map(s=>`<option value=\"${s.id}\">${s.name}</option>`).join('');
+      sourceFilter.innerHTML = '<option value="">Todas as fontes</option>' + SOURCES.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
     }
 
     async function fetchRSS(source) {
-      const url = source.url;
-      const useProxy = url.startsWith('https://www.gov.br') || url.includes('convergencia');
-      const target = useProxy ? wrapCORS(url) : url;
+      const target = wrapCORS(source.url); // força proxy para todas as fontes
       const res = await fetch(target);
       if (!res.ok) throw new Error('Falha ao buscar: ' + source.name);
       const text = await res.text();
       const parser = new DOMParser();
       const xml = parser.parseFromString(text, 'text/xml');
       if (xml.querySelector('parsererror')) throw new Error('RSS inválido em ' + source.name);
+
       let items = [...xml.querySelectorAll('item')].map(it=>({
         title: it.querySelector('title')?.textContent?.trim() || 'Sem título',
         link: it.querySelector('link')?.textContent?.trim() || '#',
-        pubDate: new Date(it.querySelector('pubDate')?.textContent || it.querySelector('dc\\:date')?.textContent || Date.now()),
+        pubDate: new Date(it.querySelector('pubDate')?.textContent || it.querySelector('dc\:date')?.textContent || Date.now()),
         description: it.querySelector('description')?.textContent || '',
         source: source
       }));
@@ -202,15 +184,11 @@
       return items;
     }
 
-    function normalizeText(html) {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      return tmp.textContent || tmp.innerText || '';
-    }
+    function normalizeText(html) { const tmp = document.createElement('div'); tmp.innerHTML = html; return tmp.textContent || tmp.innerText || ''; }
 
     async function loadAll() {
       setStatus('Carregando…', true);
-      const promises = SOURCES.map(s => fetchRSS(s).catch(()=>[]));
+      const promises = SOURCES.map(s => fetchRSS(s).catch((e)=>{ console.warn(e); return []; }));
       const results = await Promise.all(promises);
       ALL_ITEMS = results.flat().map(x=>({...x, description: normalizeText(x.description)})).sort((a,b)=> b.pubDate - a.pubDate);
       render();
@@ -218,10 +196,8 @@
     }
 
     function setStatus(msg, loading=false){
-      const el = document.getElementById('statusText');
-      el.textContent = msg;
-      const led = document.getElementById('led');
-      led.className = 'w-2 h-2 rounded-full ' + (loading ? 'bg-amber-500 pulse' : 'bg-emerald-500');
+      const el = document.getElementById('statusText'); el.textContent = msg;
+      const led = document.getElementById('led'); led.className = 'w-2 h-2 rounded-full ' + (loading ? 'bg-amber-500 pulse' : 'bg-emerald-500');
     }
 
     function render(){
@@ -234,13 +210,7 @@
       emptyEl.classList.toggle('hidden', items.length>0);
     }
 
-    function timeAgo(d){
-      const diff = Math.max(0, (Date.now()-d)/1000);
-      const map = [ ['d',86400], ['h',3600], ['min',60] ];
-      for (const [s,sec] of map){ if (diff>=sec) return `${Math.floor(diff/sec)} ${s}`; }
-      return 'agora';
-    }
-
+    function timeAgo(d){ const diff = Math.max(0, (Date.now()-d)/1000); const map = [['d',86400],['h',3600],['min',60]]; for (const [s,sec] of map){ if (diff>=sec) return `${Math.floor(diff/sec)} ${s}`; } return 'agora'; }
     function safeURL(u){ try { return new URL(u).href } catch(e){ return '#' } }
 
     function cardHero(item){
@@ -273,11 +243,6 @@
       </article>`;
     }
 
-    // UI events
-    document.getElementById('sourceFilter').addEventListener('change', render);
-    document.getElementById('searchInput').addEventListener('input', render);
-
-    // Settings modal logic
     const modal = document.getElementById('settingsModal');
     const openBtn = document.createElement('button');
     openBtn.textContent = 'Fontes';
@@ -315,16 +280,8 @@
       `).join('');
     }
 
-    // Auto-refresh
     setInterval(loadAll, REFRESH_MINUTES*60*1000);
-
-    // Boot
-    function populateSourceFilter(){ 
-      const el = document.getElementById('sourceFilter');
-      el.innerHTML = '<option value=\"\">Todas as fontes</option>' + SOURCES.map(s=>`<option value=\"${s.id}\">${s.name}</option>`).join('');
-    }
     populateSourceFilter();
-    function setStatusText(){}
     loadAll();
   </script>
 </body>
