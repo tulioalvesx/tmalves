@@ -3,640 +3,268 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TMA News — Portal de Notícias</title>
+  <title>TMA News — Portal de Notícias (Resiliente)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="color-scheme" content="light">
   <style>
-    dialog::backdrop { backdrop-filter: blur(1px); }
-    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .shadow-soft { box-shadow: 0 8px 24px rgba(0,0,0,.06); }
-    .bar-red { background-image: linear-gradient(to right, #d10, #f33); height: 3px; }
-    #progressBar { transition: width .25s ease; }
-    .ph { background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); }
+    .bar-red{height:3px;background-image:linear-gradient(to right,#d10,#f33)}
+    #progressBar{transition:width .2s ease}
+    .line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .shadow-soft{box-shadow:0 8px 24px rgba(0,0,0,.06)}
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
-  <!-- Loading Overlay (logo + barra, fundo branco) -->
   <div id="loadingOverlay" class="fixed inset-0 z-[100] grid place-items-center bg-white">
     <div class="w-[92vw] max-w-md text-center">
       <img src="logo-escudo.png" alt="Logo" class="mx-auto w-28 h-28 object-contain mb-4" />
       <h1 class="text-2xl font-semibold mb-4">TMA News</h1>
       <div class="w-full text-left">
         <div class="flex justify-between text-sm mb-1">
-          <span>Progresso</span>
-          <span id="progressPct">0%</span>
+          <span>Status</span><span id="progressPct">0%</span>
         </div>
         <div class="h-3 w-full rounded-full bg-slate-200 overflow-hidden">
           <div id="progressBar" class="h-3 w-0 bg-red-600"></div>
         </div>
-        <p id="statusText" class="text-xs text-slate-600 mt-2">Carregando notícias…</p>
+        <p id="statusText" class="text-xs text-slate-600 mt-2">Inicializando…</p>
       </div>
     </div>
   </div>
 
-  <!-- Topbar estilo G1 -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
     <div class="bar-red w-full"></div>
     <div class="max-w-6xl mx-auto px-4">
       <div class="flex items-center justify-between py-3">
         <div class="flex items-center gap-3">
-          <img src="logo-escudo.png" alt="Logo" class="w-8 h-8 rounded" />
-          <span class="text-xl font-bold tracking-tight">TMA News</span>
+          <img src="logo-escudo.png" class="w-8 h-8"/>
+          <span class="text-xl font-bold">TMA News</span>
         </div>
         <div class="flex items-center gap-2 w-full max-w-xl">
-          <input id="searchInput" type="text" placeholder="Pesquisar (título ou texto)…"
-            class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600" />
-          <select id="sourceFilter"
-            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600">
+          <input id="searchInput" class="w-full rounded-md border px-3 py-2 text-sm" placeholder="Pesquisar…"/>
+          <select id="sourceFilter" class="rounded-md border px-3 py-2 text-sm">
             <option value="__all__">Todas as fontes</option>
           </select>
-          <button id="btnSettings"
-            class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-50">Fontes</button>
+          <button id="btnSettings" class="rounded-md border px-3 py-2 text-sm">Fontes</button>
         </div>
-        <!-- Ícone Instagram -->
-        <a href="https://www.instagram.com/tulio.alvesx?igsh=MXJ3N3QyODc4bmVlcQ%3D%3D&utm_source=qr" target="_blank" rel="noopener"
-           class="ml-3 inline-flex items-center justify-center p-1 rounded hover:bg-slate-100" aria-label="Instagram do Tulio">
-          <img src="instagram-icone-icon.png" alt="Instagram" class="w-7 h-7 object-contain" />
-        </a>
       </div>
     </div>
   </header>
 
-  <!-- WhatsApp flutuante -->
-  <a href="https://wa.me/5535998993464?text=Ol%C3%A1%2C%20vim%20pelo%20TMA%20News" target="_blank" rel="noopener"
-     class="fixed bottom-5 right-5 z-40" aria-label="Fale no WhatsApp">
-    <img src="WhatsApp-icone.png" alt="WhatsApp" class="w-14 h-14 drop-shadow-lg hover:scale-105 transition" />
-  </a>
-
-  <!-- Main -->
   <main class="max-w-6xl mx-auto px-4 py-6">
-    <!-- Destaques 3 cards iguais -->
-    <section id="highlights" class="mb-8">
+    <section class="mb-8">
       <div id="highlightGrid" class="grid grid-cols-1 lg:grid-cols-3 lg:[grid-template-rows:repeat(2,minmax(0,1fr))] gap-4"></div>
     </section>
-
-    <!-- Lista vertical -->
     <section>
       <div id="list" class="grid grid-cols-1 gap-4"></div>
-      <div id="skeletonBox" class="space-y-3 my-6"></div>
-      <p id="emptyState" class="text-slate-600 text-center py-12 hidden">Nenhuma notícia encontrada.</p>
-    </section>
-
-    <!-- UOL Jogos de Hoje -->
-    <section class="mt-12">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-lg font-semibold">Futebol — Jogos de Hoje (UOL)</h2>
-        <div class="flex items-center gap-2">
-          <label for="uolDate" class="text-sm text-slate-600">Data:</label>
-          <input id="uolDate" type="date" class="rounded-md border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-red-600">
-        </div>
-      </div>
-      <iframe id="uolFutebolFrame" class="w-full h-[1200px] rounded-xl border border-slate-200"
-              src="https://www.uol.com.br/esporte/futebol/central-de-jogos/#/"
-              loading="lazy"></iframe>
+      <p id="emptyState" class="text-slate-600 text-center py-12 hidden">Nenhuma notícia.</p>
     </section>
   </main>
 
-  <!-- Modal de Fontes (fechado por padrão) -->
-  <dialog id="settingsModal" class="backdrop:bg-black/40 rounded-xl p-0 w-[720px] max-w-[92vw]">
-    <form method="dialog" class="bg-white rounded-xl overflow-hidden">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-        <h3 class="text-lg font-semibold">Gerenciar Fontes RSS</h3>
-        <button class="px-2 py-1 rounded-md hover:bg-slate-100" value="cancel">Fechar</button>
-      </div>
-      <div class="p-5 space-y-4">
-        <p class="text-sm text-slate-600">Incluídas por padrão: TeleSíntese, TELETIME, G1, Folha e BBC Brasil.</p>
-        <div class="grid grid-cols-1 sm:grid-cols-[1fr,auto] gap-3">
-          <input id="newSourceName" type="text" placeholder="Nome da fonte"
-                 class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600" />
-          <input id="newSourceUrl" type="url" placeholder="URL do RSS/Atom"
-                 class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600" />
-        </div>
-        <div class="flex justify-end">
-          <button id="btnAddSource" class="rounded-md bg-red-600 text-white px-3 py-2 text-sm hover:bg-red-700">
-            Adicionar
-          </button>
-        </div>
-        <div>
-          <h4 class="font-medium mb-2">Fontes Atuais</h4>
-          <ul id="sourcesList" class="space-y-2"></ul>
-        </div>
-      </div>
-      <div class="px-5 py-4 border-t border-slate-200 text-sm text-slate-600">
-        Dica: as fontes ficam salvas no seu navegador (localStorage).
-      </div>
-    </form>
-  </dialog>
-
   <script>
-    // ========= Storage de fontes =========
-    const LS_KEY = "tma_news_sources_v1";
-    let SOURCES = [];
-    let ALL_ITEMS = [];
-    let VISIBLE_ITEMS = []; // itens já renderizados na lista
-    const INITIAL_COUNT = 20;
-    const BATCH_SIZE = 10;
-    const MAX_SKELETONS = 50;
+    const LS_KEY="tma_news_sources_v1";
+    const overlay=document.getElementById('loadingOverlay');
+    const progressBar=document.getElementById('progressBar');
+    const progressPct=document.getElementById('progressPct');
+    const statusText=document.getElementById('statusText');
+    const sourceFilter=document.getElementById('sourceFilter');
+    const searchInput=document.getElementById('searchInput');
+    const highlightGrid=document.getElementById('highlightGrid');
+    const listEl=document.getElementById('list');
+    const emptyState=document.getElementById('emptyState');
+    let SOURCES=[], ALL_ITEMS=[];
 
-    const overlay = document.getElementById('loadingOverlay');
-    const progressBar = document.getElementById('progressBar');
-    const progressPct = document.getElementById('progressPct');
-    const statusText  = document.getElementById('statusText');
-    const listEl = document.getElementById('list');
-    const skeletonBox = document.getElementById('skeletonBox');
-    const emptyStateEl = document.getElementById('emptyState');
-    const sourceFilter = document.getElementById('sourceFilter');
-    const searchInput = document.getElementById('searchInput');
-    const highlights = document.getElementById('highlights');
-    const highlightGrid = document.getElementById('highlightGrid');
-
-    // Logos por fonte (fallback quando não houver imagem da matéria)
-    const SOURCE_LOGOS = {
-      "G1": "https://g1.globo.com/favicon.ico",
-      "Folha": "https://www.folha.uol.com.br/favicon.ico",
-      "BBC Brasil": "https://www.bbc.com/favicon.ico",
-      "TeleSíntese": "https://telesintese.com.br/wp-content/uploads/2020/02/cropped-favicon-192x192.png",
-      "TELETIME": "https://teletime.com.br/wp-content/uploads/2020/02/cropped-favicon-192x192.png"
+    const SOURCE_LOGOS={
+      "G1":"https://g1.globo.com/favicon.ico",
+      "Folha":"https://www.folha.uol.com.br/favicon.ico",
+      "BBC Brasil":"https://www.bbc.com/favicon.ico",
+      "TeleSíntese":"https://telesintese.com.br/wp-content/uploads/2020/02/cropped-favicon-192x192.png",
+      "TELETIME":"https://teletime.com.br/wp-content/uploads/2020/02/cropped-favicon-192x192.png"
     };
 
-    function defaultSources() {
+    function defaultSources(){
       return [
-        { name: "TeleSíntese", url: "https://telesintese.com.br/feed/", type: "rss" },
-        { name: "TELETIME", url: "https://teletime.com.br/feed/", type: "rss" },
-        { name: "G1", url: "https://g1.globo.com/rss/g1/", type: "rss" },
-        { name: "Folha", url: "https://feeds.folha.uol.com.br/emcimadahora/rss091.xml", type: "rss" },
-        { name: "BBC Brasil", url: "https://feeds.bbci.co.uk/portuguese/rss.xml", type: "rss" }
+        {name:"TeleSíntese",url:"https://telesintese.com.br/feed/" },
+        {name:"TELETIME",url:"https://teletime.com.br/feed/" },
+        {name:"G1",url:"https://g1.globo.com/rss/g1/" },
+        {name:"Folha",url:"https://feeds.folha.uol.com.br/emcimadahora/rss091.xml"},
+        {name:"BBC Brasil",url:"https://feeds.bbci.co.uk/portuguese/rss.xml"}
       ];
     }
-
-    function loadSources() {
-      try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (!raw) return defaultSources();
-        const data = JSON.parse(raw);
-        if (!Array.isArray(data) || data.length === 0) return defaultSources();
-        return data;
-      } catch {
-        return defaultSources();
+    function loadSources(){
+      try{
+        const raw=localStorage.getItem(LS_KEY);
+        const data=raw?JSON.parse(raw):null;
+        return Array.isArray(data)&&data.length?data:defaultSources();
+      }catch{return defaultSources();}
+    }
+    function populateSourceFilter(){
+      sourceFilter.innerHTML='<option value="__all__">Todas as fontes</option>';
+      for(const s of SOURCES){
+        const o=document.createElement('option'); o.value=s.name; o.textContent=s.name; sourceFilter.appendChild(o);
       }
     }
-    function saveSources(next) {
-      localStorage.setItem(LS_KEY, JSON.stringify(next));
-      SOURCES = next;
-      populateSourceFilter();
-    }
-    function populateSourceFilter() {
-      sourceFilter.innerHTML = '<option value="__all__">Todas as fontes</option>';
-      for (const s of SOURCES) {
-        const opt = document.createElement('option');
-        opt.value = s.name;
-        opt.textContent = s.name;
-        sourceFilter.appendChild(opt);
-      }
-    }
+    function setStatus(msg){ statusText.textContent=msg; }
+    function updateProgress(p){ p=Math.max(0,Math.min(100, p|0)); progressBar.style.width=p+'%'; progressPct.textContent=p+'%'; }
 
-    // ========= Progresso & status =========
-    function updateProgress(pct) {
-      const clamped = Math.max(0, Math.min(100, pct|0));
-      progressBar.style.width = clamped + '%';
-      progressPct.textContent = clamped + '%';
+    // Watchdog: if progress <5% after 5s, bump to 10%
+    setTimeout(()=>{ const w=progressBar.style.width||'0%'; if(parseInt(w)<5){ updateProgress(10); setStatus('Iniciando fontes…'); } }, 5000);
+    // Auto-dismiss after 15s no matter what
+    setTimeout(()=>{ if(getComputedStyle(overlay).display!=='none'){ setStatus('Carregando em segundo plano…'); overlay.style.display='none'; } }, 15000);
+
+    const timeout = (ms)=> new Promise((_,rej)=> setTimeout(()=>rej(new Error('timeout')),ms));
+    async function fetchWithTimeout(url, ms=8000){
+      return Promise.race([ fetch(url), timeout(ms) ]);
     }
-    function setStatus(msg) { statusText.textContent = msg; }
-
-    // ========= Helpers =========
-    function resolveUrl(base, url) { try { return new URL(url, base).href; } catch { return url; } }
-
-    // Heurística para corrigir texto com � (feeds latin1)
-    function fixEncoding(s) {
-      if (!s || !s.includes('�')) return s;
-      try {
-        const bytes = new Uint8Array(s.split('').map(ch => ch.charCodeAt(0)));
-        const recoded = new TextDecoder('iso-8859-1').decode(bytes);
-        return recoded;
-      } catch { return s; }
+    async function fetchTextThroughProxies(url){
+      const attempts=[
+        async()=>{ const r=await fetchWithTimeout(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`); if(!r.ok)throw 0; const j=await r.json(); return j.contents; },
+        async()=>{ const r=await fetchWithTimeout(`https://cors.isomorphic-git.org/${url}`); if(!r.ok)throw 0; return await r.text(); },
+        async()=>{ const r=await fetchWithTimeout(`https://r.jina.ai/http://${url.replace(/^https?:\/\//,'')}`); if(!r.ok)throw 0; return await r.text(); }
+      ];
+      let last; for(const a of attempts){ try{ return await a(); }catch(e){ last=e; } }
+      throw last||new Error('proxy fail');
     }
+    function fixEncoding(s){ if(!s||!s.includes('�'))return s; try{ const bytes=new Uint8Array(s.split('').map(ch=>ch.charCodeAt(0))); return new TextDecoder('iso-8859-1').decode(bytes);}catch{return s;} }
+    function resolveUrl(base, url){ try{ return new URL(url, base).href; }catch{ return url; } }
 
-    // ========= Proxy robusto =========
-    async function fetchTextThroughProxies(url, acceptNonXml = false) {
-      const attempts = [
-        async () => {
-          const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-          if (!res.ok) throw new Error('allorigins ' + res.status);
-          const j = await res.json();
-          return j.contents;
-        },
-        async () => {
-          const res = await fetch(`https://cors.isomorphic-git.org/${url}`);
-          if (!res.ok) throw new Error('isomorphic ' + res.status);
-          return await res.text();
-        },
-        async () => {
-          const res = await fetch(`https://r.jina.ai/http://${url.replace(/^https?:\/\//, '')}`);
-          if (!res.ok) throw new Error('jina ' + res.status);
-          const t = await res.text();
-          if (!acceptNonXml && !t.includes('<rss') && !t.includes('<feed')) throw new Error('jina not xml');
-          return t;
+    function parseRSS(xmlText, sourceName){
+      const parser=new DOMParser(); const xml=parser.parseFromString(xmlText,"text/xml");
+      const out=[];
+      xml.querySelectorAll("rss channel item").forEach(item=>{
+        const title=(item.querySelector("title")?.textContent||"(Sem título)").trim();
+        const link=(item.querySelector("link")?.textContent||"#").trim();
+        const pub=(item.querySelector("pubDate")?.textContent||"").trim();
+        const pubDate=pub?new Date(pub):new Date();
+        const desc=(item.querySelector("description")?.textContent||"").trim();
+        let image=item.querySelector('media\\:content')?.getAttribute('url')
+                 || item.querySelector('media\\:thumbnail')?.getAttribute('url')
+                 || item.querySelector('enclosure')?.getAttribute('url');
+        if(!image){
+          const html=(item.querySelector('content\\:encoded')?.textContent||desc);
+          const m=(html||"").match(/<img[^>]+src=["']([^"']+)["']/i);
+          if(m) image=m[1];
         }
-      ];
-      let lastErr;
-      for (const step of attempts) { try { return await step(); } catch(e){ lastErr=e; } }
-      throw lastErr || new Error('Sem proxy disponível');
-    }
-    async function fetchRSS(source) {
-      let xml = await fetchTextThroughProxies(source.url);
-      if (xml.includes('�')) {
-        try {
-          const alt = await fetch(`https://cors.isomorphic-git.org/${source.url}`);
-          if (alt.ok) xml = await alt.text();
-        } catch {}
-      }
-      return parseRSS(xml, source.name);
-    }
-
-    // ========= Parse RSS/Atom + imagem =========
-    function textContentSafe(el, sel, fallback = "") {
-      const n = el.querySelector(sel);
-      const v = n ? (n.textContent || "").trim() : fallback;
-      return fixEncoding(v);
-    }
-    function attr(el, sel, attr) {
-      const n = el.querySelector(sel);
-      return n ? n.getAttribute(attr) : null;
-    }
-    function extractImgFromHtml(html) {
-      if (!html) return null;
-      let m = html.match(/<img[^>]+srcset=["']([^"']+)["']/i);
-      if (m) {
-        const first = m[1].split(',')[0].trim().split(' ')[0].trim();
-        if (first) return first;
-      }
-      m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-      if (m) return m[1];
-      return null;
-    }
-    function getImageFromItemNode(item) {
-      let url = item.querySelector('media\\:content')?.getAttribute('url')
-             || item.querySelector('media\\:thumbnail')?.getAttribute('url')
-             || item.querySelector('enclosure')?.getAttribute('url');
-      if (!url) {
-        const html = textContentSafe(item, 'content\\:encoded') || textContentSafe(item, 'description');
-        url = extractImgFromHtml(html);
-      }
-      return url;
-    }
-    function normalizeText(html) {
-      if (!html) return "";
-      const tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      return fixEncoding(tmp.textContent || tmp.innerText || "");
-    }
-    function parseRSS(xmlText, sourceName) {
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(xmlText, "text/xml");
-      if (xml.querySelector("parsererror")) throw new Error("XML inválido para " + sourceName);
-      const out = [];
-      xml.querySelectorAll("rss channel item").forEach(item => {
-        const title = textContentSafe(item, "title", "(Sem título)");
-        const link = textContentSafe(item, "link", "#");
-        const pubDateRaw = textContentSafe(item, "pubDate") || textContentSafe(item, "dc\\:date");
-        const pubDate = pubDateRaw ? new Date(pubDateRaw) : new Date();
-        const description = textContentSafe(item, "description") || textContentSafe(item, "content\\:encoded");
-        let image = getImageFromItemNode(item);
-        if (image) image = resolveUrl(link, image);
-        out.push({ title, link, pubDate, description, image, source: sourceName });
+        if(image) image=resolveUrl(link,image);
+        out.push({title:fixEncoding(title), link, pubDate, description:fixEncoding(desc), image, source:sourceName});
       });
-      if (out.length) return out;
-      xml.querySelectorAll("feed entry").forEach(entry => {
-        const title = textContentSafe(entry, "title", "(Sem título)");
-        let link = attr(entry, "link[rel='alternate']", "href") || attr(entry, "link", "href") || "#";
-        const pubDateRaw = textContentSafe(entry, "updated") || textContentSafe(entry, "published");
-        const pubDate = pubDateRaw ? new Date(pubDateRaw) : new Date();
-        const summary = textContentSafe(entry, "summary") || textContentSafe(entry, "content");
-        let image = getImageFromItemNode(entry);
-        if (image) image = resolveUrl(link, image);
-        out.push({ title, link, pubDate, description: summary, image, source: sourceName });
+      if(out.length) return out;
+      xml.querySelectorAll("feed entry").forEach(entry=>{
+        const title=(entry.querySelector("title")?.textContent||"(Sem título)").trim();
+        const link=entry.querySelector("link[rel='alternate']")?.getAttribute('href')||entry.querySelector("link")?.getAttribute('href')||"#";
+        const pub=entry.querySelector("updated")?.textContent||entry.querySelector("published")?.textContent||"";
+        const pubDate=pub?new Date(pub):new Date();
+        const sum=(entry.querySelector("summary")?.textContent||entry.querySelector("content")?.textContent||"").trim();
+        let image=entry.querySelector('media\\:content')?.getAttribute('url')||entry.querySelector('media\\:thumbnail')?.getAttribute('url');
+        if(image) image=resolveUrl(link,image);
+        out.push({title:fixEncoding(title), link, pubDate, description:fixEncoding(sum), image, source:sourceName});
       });
       return out;
     }
 
-    // ========= Fallback OG:image (lazy) =========
-    async function tryFillMissingImages(items, max = 64) {
-      const targets = items.filter(x => !x.image).slice(0, max);
-      for (const it of targets) {
-        try {
-          const html = await fetchTextThroughProxies(it.link, true);
-          const doc = (new DOMParser()).parseFromString(html, "text/html");
-          const metas = [
-            'meta[property="og:image"]',
-            'meta[name="og:image"]',
-            'meta[property="og:image:url"]',
-            'meta[name="twitter:image"]',
-            'meta[property="twitter:image"]',
-            'link[rel="image_src"]'
-          ];
-          let url = null;
-          for (const sel of metas) {
-            const el = doc.querySelector(sel);
-            if (el) { url = el.getAttribute('content') || el.getAttribute('href'); if (url) break; }
-          }
-          if (!url) {
-            const m = doc.documentElement.innerHTML.match(/<img[^>]+src=["']([^"']+)["']/i);
-            if (m) url = m[1];
-          }
-          if (url) {
-            url = resolveUrl(it.link, url);
-            it.image = url;
-            const cardImg = document.querySelector(`[data-hash="${hash(it)}"] img[data-role="thumb"]`);
-            if (cardImg) cardImg.src = url;
-            const heroImg = document.querySelector(`img[data-hero="${hash(it)}"]`);
-            if (heroImg) heroImg.src = url;
-          }
-        } catch (e) { console.warn('og:image fail', it.link, e); }
+    function formatDate(d){ try{ return new Intl.DateTimeFormat('pt-BR',{dateStyle:'medium',timeStyle:'short'}).format(d);}catch{return d.toLocaleString();} }
+    function hash(it){ return btoa(unescape(encodeURIComponent((it.link||'')+'|'+(it.title||'')))).replace(/=+$/,''); }
+    function imgFor(it){ const src=it.image || SOURCE_LOGOS[it.source]; if(!src) return `<div class="w-28 h-28 bg-slate-200 rounded-md"></div>`; return `<img data-role="thumb" referrerpolicy="no-referrer" src="${src}" class="w-28 h-28 rounded-md object-cover">`; }
+
+    function renderHighlights(items){
+      const withImg=items.filter(x=>!!x.image);
+      const a=withImg[0], b=withImg[1], c=withImg[2];
+      function hero(x){
+        if(!x) return '';
+        const id=hash(x);
+        return `<a href="${x.link}" target="_blank" rel="noopener"
+                  class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2 lg:row-span-2 h-full">
+                  <div class="relative h-64 lg:h-full">
+                    <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" class="w-full h-full object-cover"/>
+                  </div>
+                  <div class="p-4">
+                    <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
+                    <h2 class="text-2xl font-bold mt-1 mb-2 line-clamp-2">${x.title}</h2>
+                    <p class="text-slate-700 line-clamp-3">${(x.description||'').replace(/</g,'&lt;')}</p>
+                  </div>
+                </a>`;
       }
-    }
-
-    // ========= Render =========
-    function formatDate(d) {
-      try { return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium', timeStyle: 'short' }).format(d); }
-      catch { return d.toLocaleString(); }
-    }
-    function matchesSearch(item, term) {
-      if (!term) return true;
-      term = term.toLowerCase();
-      return (item.title?.toLowerCase().includes(term) || item.description?.toLowerCase().includes(term));
-    }
-    function applyFilters(items) {
-      const src = sourceFilter.value;
-      const term = searchInput.value.trim();
-      return items.filter(it => (src === '__all__' || it.source === src) && matchesSearch(it, term));
-    }
-    function hash(it) { return btoa(unescape(encodeURIComponent((it.link||'') + '|' + (it.title||'')))).replace(/=+$/,''); }
-
-    
-    
-    function renderHighlights(items) {
-      const withImg = items.filter(x => !!x.image);
-      const a = withImg[0], b = withImg[1], c = withImg[2];
-      function hero(x) {
-        if (!x) return '';
-        const id = hash(x);
-        return `
-          <a href="${x.link}" target="_blank" rel="noopener"
-             class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2 lg:row-span-2 h-full">
-            <div class="relative h-64 lg:h-full">
-              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-full object-cover group-hover:opacity-95 transition" />
-            </div>
-            <div class="p-4">
-              <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
-              <h2 class="text-2xl font-bold mt-1 mb-2 leading-tight line-clamp-2">${x.title}</h2>
-              <p class="text-slate-700 line-clamp-3">${(x.description||'').replace(/</g,'&lt;')}</p>
-            </div>
-          </a>`;
+      function small(x){
+        if(!x) return '';
+        const id=hash(x);
+        return `<a href="${x.link}" target="_blank" rel="noopener"
+                  class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 h-full">
+                  <div class="relative h-40">
+                    <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" class="w-full h-full object-cover"/>
+                  </div>
+                  <div class="p-4">
+                    <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
+                    <h3 class="text-lg font-semibold mt-1 line-clamp-2">${x.title}</h3>
+                  </div>
+                </a>`;
       }
-      function smallCard(x) {
-        if (!x) return '';
-        const id = hash(x);
-        return `
-          <a href="${x.link}" target="_blank" rel="noopener"
-             class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 h-full">
-            <div class="relative h-40">
-              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-full object-cover group-hover:opacity-95 transition" />
-            </div>
-            <div class="p-4">
-              <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
-              <h3 class="text-lg font-semibold mt-1 line-clamp-2">${x.title}</h3>
-            </div>
-          </a>`;
+      highlightGrid.innerHTML = `${hero(a)}${small(b)}${small(c)}`;
+    }
+
+    function render(){
+      let items=[...ALL_ITEMS].sort((a,b)=>b.pubDate-a.pubDate);
+      if(sourceFilter.value==='__all__'){
+        const withImg=items.filter(x=>x.image), without=items.filter(x=>!x.image);
+        items=withImg.concat(without);
+      }else{
+        items=items.filter(x=>x.source===sourceFilter.value);
       }
-      highlightGrid.innerHTML = `
-        ${hero(a)}
-        ${smallCard(b)}
-        ${smallCard(c)}
-      `;
-    }
+      const term=searchInput.value.trim().toLowerCase();
+      if(term) items=items.filter(x=>(x.title||'').toLowerCase().includes(term)||(x.description||'').toLowerCase().includes(term));
 
-      function smallCard(x) {
-        if (!x) return '';
-        const id = hash(x);
-        return `
-          <a href="${x.link}" target="_blank" rel="noopener" class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
-            <div class="relative">
-              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />
-            </div>
-            <div class="p-4">
-              <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
-              <h3 class="text-lg font-semibold mt-1 line-clamp-2">${x.title}</h3>
-            </div>
-          </a>`;
-      }
-      // Monta grid 1x2
-      highlightGrid.innerHTML = `
-        <div class="lg:col-span-2">${hero(a)}</div>
-        <div class="space-y-4">${smallCard(b)}${smallCard(c)}</div>
-      `;
-    }
-
-
-    function imgTagForItem(it) {
-      const logo = SOURCE_LOGOS[it.source] || null;
-      const src = it.image || logo;
-      if (src) {
-        return `<img data-role="thumb" referrerpolicy="no-referrer" src="${src}" alt="" class="w-28 h-28 rounded-md object-cover">`;
-      }
-      return `<div class="w-28 h-28 rounded-md ph"></div>`;
-    }
-
-    function cardHTML(it) {
-      const id = hash(it);
-      const img = imgTagForItem(it);
-      return `
-      <article class="rounded-xl border border-slate-200 bg-white hover:shadow-sm transition p-4" data-hash="${id}">
-        <a href="${it.link}" target="_blank" rel="noopener" class="block">
-          <div class="flex items-start gap-4">
-            <div class="shrink-0">${img}</div>
-            <div class="min-w-0">
-              <div class="text-sm text-slate-500">${it.source} • ${formatDate(it.pubDate)}</div>
-              <h3 class="text-lg font-semibold mb-1">${it.title}</h3>
-              <p class="text-sm text-slate-700 line-clamp-3">${(it.description || '').replace(/</g,'&lt;')}</p>
-            </div>
-          </div>
-        </a>
-      </article>`;
-    }
-
-    function renderListInitial(items) {
-      listEl.innerHTML = '';
-      VISIBLE_ITEMS = items.slice(0, INITIAL_COUNT);
-      listEl.innerHTML = VISIBLE_ITEMS.map(cardHTML).join('');
-      renderSkeletons(Math.min(MAX_SKELETONS, items.length - INITIAL_COUNT));
-    }
-
-    function renderSkeletons(n) {
-      skeletonBox.innerHTML = '';
-      const count = Math.max(0, Math.min(n, MAX_SKELETONS));
-      if (count === 0) return;
-      let h = '';
-      for (let i = 0; i < count; i++) {
-        h += `
-        <div class="rounded-xl border border-slate-200 bg-white p-4 animate-pulse">
-          <div class="flex items-start gap-4">
-            <div class="w-28 h-28 rounded-md ph"></div>
-            <div class="flex-1 space-y-2">
-              <div class="h-3 w-1/3 ph rounded"></div>
-              <div class="h-4 w-2/3 ph rounded"></div>
-              <div class="h-3 w-5/6 ph rounded"></div>
-            </div>
-          </div>
-        </div>`;
-      }
-      skeletonBox.innerHTML = h;
-    }
-
-    function appendNextBatch(items) {
-      const start = VISIBLE_ITEMS.length;
-      const next = items.slice(start, start + BATCH_SIZE);
-      if (!next.length) { skeletonBox.innerHTML = ''; return; }
-      // mostra skeleton enquanto "carrega"
-      renderSkeletons(next.length);
-      setTimeout(() => {
-        VISIBLE_ITEMS = items.slice(0, start + next.length);
-        listEl.insertAdjacentHTML('beforeend', next.map(cardHTML).join(''));
-        // atualiza skeleton remanescente se ainda houver mais para carregar
-        const remain = items.length - VISIBLE_ITEMS.length;
-        renderSkeletons(Math.min(remain, MAX_SKELETONS - VISIBLE_ITEMS.length + INITIAL_COUNT));
-      }, 300);
-    }
-
-    function render() {
-      let items = applyFilters(ALL_ITEMS).sort((a,b) => b.pubDate - a.pubDate);
-      // Prioriza os com imagem quando "Todas"
-      if (sourceFilter.value === '__all__') {
-        const withImg = items.filter(x => x.image);
-        const withoutImg = items.filter(x => !x.image);
-        items = withImg.concat(withoutImg);
-      }
-      emptyStateEl.classList.toggle('hidden', items.length > 0);
+      emptyState.classList.toggle('hidden', items.length>0);
       renderHighlights(items);
-      renderListInitial(items);
-
-      // Infinite scroll
-      window.onscroll = () => {
-        const nearBottom = window.innerHeight + window.scrollY >= (document.body.offsetHeight - 600);
-        if (nearBottom) appendNextBatch(items);
-      };
+      listEl.innerHTML = items.slice(0,20).map(it=>`
+        <article class="rounded-xl border border-slate-200 bg-white p-4">
+          <a href="${it.link}" target="_blank" rel="noopener" class="block">
+            <div class="flex items-start gap-4">
+              <div class="shrink-0">${imgFor(it)}</div>
+              <div class="min-w-0">
+                <div class="text-sm text-slate-500">${it.source} • ${formatDate(it.pubDate)}</div>
+                <h3 class="text-lg font-semibold mb-1">${it.title}</h3>
+                <p class="text-sm text-slate-700 line-clamp-3">${(it.description||'').replace(/</g,'&lt;')}</p>
+              </div>
+            </div>
+          </a>
+        </article>
+      `).join('');
     }
 
-    // ========= UOL jogos iframe control =========
-    const uolFrame = document.getElementById('uolFutebolFrame');
-    const uolDate = document.getElementById('uolDate');
-    function toYYYYMMDD(d) {
-      const y = d.getFullYear();
-      const m = String(d.getMonth()+1).padStart(2,'0');
-      const day = String(d.getDate()).padStart(2,'0');
-      return `${y}-${m}-${day}`;
+    async function fetchRSS(source){
+      let xml = await fetchTextThroughProxies(source.url);
+      return parseRSS(xml, source.name);
     }
-    function updateUOLIframe(dateStr) {
-      const url = `https://www.uol.com.br/esporte/futebol/central-de-jogos/#/${dateStr}`;
-      uolFrame.src = url;
-    }
-    (function initUOL() {
-      const today = new Date();
-      const ds = toYYYYMMDD(today);
-      uolDate.value = ds;
-      updateUOLIframe(ds);
-      uolDate.addEventListener('change', (e) => {
-        if (e.target.value) updateUOLIframe(e.target.value);
-      });
-    })();
 
-    // ========= Modal / Segurança simples =========
-    const settingsModal = document.getElementById('settingsModal');
-    document.getElementById('btnSettings').addEventListener('click', () => {
-      const user = prompt('Usuário:');
-      const pass = user ? prompt('Senha:') : null;
-      if (user === 'adm' && pass === '@mudar') {
-        mountSourcesList();
-        settingsModal.showModal();
-      } else {
-        alert('Acesso negado.');
-      }
-    });
-
-    function mountSourcesList() {
-      const ul = document.getElementById('sourcesList');
-      ul.innerHTML = '';
-      SOURCES.forEach((s, idx) => {
-        const li = document.createElement('li');
-        li.className = "flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-3 py-2";
-        li.innerHTML = `
-          <div class="min-w-0">
-            <div class="font-medium truncate">${s.name}</div>
-            <div class="text-xs text-slate-500 truncate">${s.url}</div>
-          </div>
-          <button data-i="${idx}" class="btn-rem rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">
-            Remover
-          </button>`;
-        ul.appendChild(li);
-      });
-      ul.querySelectorAll('.btn-rem').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const i = Number(e.currentTarget.dataset.i);
-          const next = [...SOURCES.slice(0,i), ...SOURCES.slice(i+1)];
-          saveSources(next);
-          mountSourcesList();
-          loadAll();
+    async function loadAll(){
+      try{
+        overlay.style.display='grid';
+        updateProgress(5); setStatus('Iniciando fontes…');
+        ALL_ITEMS=[];
+        const total = (SOURCES && SOURCES.length) ? SOURCES.length : 1;
+        let done=0;
+        const tasks = SOURCES.map(async (s)=>{
+          try{
+            const items=(await fetchRSS(s)).map(x=>({...x}));
+            ALL_ITEMS=ALL_ITEMS.concat(items);
+          }catch(e){
+            console.warn('Erro fonte', s?.name, e);
+          }finally{
+            done++; updateProgress(Math.round(done*100/total)); setStatus(`Carregado ${done}/${total}`);
+            if(done===1) render();
+          }
         });
-      });
+        await Promise.allSettled(tasks);
+        render();
+      }finally{
+        setStatus('Pronto');
+        setTimeout(()=>{ overlay.style.display='none'; }, 200);
+      }
     }
 
-    document.getElementById('btnAddSource').addEventListener('click', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('newSourceName').value.trim();
-      const url  = document.getElementById('newSourceUrl').value.trim();
-      if (!name || !url) return alert('Informe nome e URL.');
-      const next = [...SOURCES, { name, url, type: 'rss' }];
-      saveSources(next);
-      document.getElementById('newSourceName').value = '';
-      document.getElementById('newSourceUrl').value = '';
-      mountSourcesList();
-      loadAll();
-    });
-
-    // filtros
-    sourceFilter.addEventListener('change', render);
-    searchInput.addEventListener('input', render);
-
-    // ========= Boot =========
-    async function loadAll() {
-      overlay.style.display = 'grid';
-      setStatus('Carregando notícias…');
-      ALL_ITEMS = [];
-      const total = SOURCES.length;
-      let done = 0;
-      updateProgress(0);
-
-      const tasks = SOURCES.map(async (s) => {
-        try {
-          const items = (await fetchRSS(s)).map(x => ({ ...x, description: normalizeText(x.description) }));
-          ALL_ITEMS = ALL_ITEMS.concat(items);
-        } catch (e) { console.warn('Erro em', s.name, e); }
-        done++; updateProgress(Math.round(done * 100 / Math.max(1,total)));
-        if (done === 1) render(); // primeira pintura rápida
-      });
-
-      await Promise.all(tasks);
-      render();
-
-      tryFillMissingImages(ALL_ITEMS, 64).then(() => { render(); });
-      setStatus('Pronto');
-      setTimeout(() => { overlay.style.display = 'none'; }, 150);
-    }
-
-    (async function init() {
+    (async function init(){
       SOURCES = loadSources();
       populateSourceFilter();
       await loadAll();
+      sourceFilter.addEventListener('change', render);
+      searchInput.addEventListener('input', render);
     })();
   </script>
 </body>
