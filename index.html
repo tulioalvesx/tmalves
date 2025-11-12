@@ -13,6 +13,7 @@
     .shadow-soft { box-shadow: 0 8px 24px rgba(0,0,0,.06); }
     .bar-red { background-image: linear-gradient(to right, #d10, #f33); height: 3px; }
     #progressBar { transition: width .25s ease; }
+    .ph { background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -53,7 +54,7 @@
           <button id="btnSettings"
             class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-50">Fontes</button>
         </div>
-        <!-- Ícone Instagram no canto direito (link do usuário) -->
+        <!-- Ícone Instagram do Tulio -->
         <a href="https://www.instagram.com/tulio.alvesx?igsh=MXJ3N3QyODc4bmVlcQ%3D%3D&utm_source=qr" target="_blank" rel="noopener"
            class="ml-3 inline-flex items-center justify-center p-1 rounded hover:bg-slate-100" aria-label="Instagram do Tulio">
           <img src="instagram-icone-icon.png" alt="Instagram" class="w-7 h-7 object-contain" />
@@ -70,8 +71,8 @@
 
   <!-- Main -->
   <main class="max-w-6xl mx-auto px-4 py-6">
-    <!-- Destaques estilo G1 -->
-    <section id="highlights" class="mb-8 hidden">
+    <!-- Destaques sempre presente (sem pular layout) -->
+    <section id="highlights" class="mb-8">
       <div id="highlightGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-4"></div>
     </section>
 
@@ -171,11 +172,19 @@
     function setStatus(msg) { statusText.textContent = msg; }
 
     // ========= Helpers =========
-    function resolveUrl(base, url) {
-      try { return new URL(url, base).href; } catch { return url; }
+    function resolveUrl(base, url) { try { return new URL(url, base).href; } catch { return url; } }
+
+    // Heurística para corrigir texto com � (provável Latin1 mal decodado)
+    function fixEncoding(s) {
+      if (!s || !s.includes('�')) return s;
+      try {
+        const bytes = new Uint8Array(s.split('').map(ch => ch.charCodeAt(0)));
+        const recoded = new TextDecoder('iso-8859-1').decode(bytes);
+        return recoded;
+      } catch { return s; }
     }
 
-    // ========= Proxy robusto (garante XML/HTML) =========
+    // ========= Proxy robusto =========
     async function fetchTextThroughProxies(url, acceptNonXml = false) {
       const attempts = [
         async () => {
@@ -198,20 +207,26 @@
         }
       ];
       let lastErr;
-      for (const step of attempts) {
-        try { return await step(); } catch (e) { lastErr = e; console.warn('Falha proxy', e); }
-      }
+      for (const step of attempts) { try { return await step(); } catch(e){ lastErr=e; } }
       throw lastErr || new Error('Sem proxy disponível');
     }
     async function fetchRSS(source) {
-      const xml = await fetchTextThroughProxies(source.url);
+      // tenta uma vez; se vier texto bagunçado, tenta outra ordem
+      let xml = await fetchTextThroughProxies(source.url);
+      if (xml.includes('�')) {
+        try {
+          const alt = await fetch(`https://cors.isomorphic-git.org/${source.url}`);
+          if (alt.ok) xml = await alt.text();
+        } catch {}
+      }
       return parseRSS(xml, source.name);
     }
 
     // ========= Parse RSS/Atom + imagem =========
     function textContentSafe(el, sel, fallback = "") {
       const n = el.querySelector(sel);
-      return n ? (n.textContent || "").trim() : fallback;
+      const v = n ? (n.textContent || "").trim() : fallback;
+      return fixEncoding(v);
     }
     function attr(el, sel, attr) {
       const n = el.querySelector(sel);
@@ -219,7 +234,6 @@
     }
     function extractImgFromHtml(html) {
       if (!html) return null;
-      // procura srcset primeiro (pega a primeira URL)
       let m = html.match(/<img[^>]+srcset=["']([^"']+)["']/i);
       if (m) {
         const first = m[1].split(',')[0].trim().split(' ')[0].trim();
@@ -243,16 +257,13 @@
       if (!html) return "";
       const tmp = document.createElement('div');
       tmp.innerHTML = html;
-      return tmp.textContent || tmp.innerText || "";
+      return fixEncoding(tmp.textContent || tmp.innerText || "");
     }
     function parseRSS(xmlText, sourceName) {
       const parser = new DOMParser();
       const xml = parser.parseFromString(xmlText, "text/xml");
-      if (xml.querySelector("parsererror")) {
-        throw new Error("XML inválido para " + sourceName);
-      }
+      if (xml.querySelector("parsererror")) throw new Error("XML inválido para " + sourceName);
       const out = [];
-      // RSS 2.0
       xml.querySelectorAll("rss channel item").forEach(item => {
         const title = textContentSafe(item, "title", "(Sem título)");
         const link = textContentSafe(item, "link", "#");
@@ -264,7 +275,6 @@
         out.push({ title, link, pubDate, description, image, source: sourceName });
       });
       if (out.length) return out;
-      // Atom
       xml.querySelectorAll("feed entry").forEach(entry => {
         const title = textContentSafe(entry, "title", "(Sem título)");
         let link = attr(entry, "link[rel='alternate']", "href") || attr(entry, "link", "href") || "#";
@@ -279,31 +289,44 @@
     }
 
     // ========= Fallback OG:image (lazy) =========
-    async function tryFillMissingImages(items, max = 24) {
+    async function tryFillMissingImages(items, max = 36) {
       const targets = items.filter(x => !x.image).slice(0, max);
       for (const it of targets) {
         try {
           const html = await fetchTextThroughProxies(it.link, true);
           const doc = (new DOMParser()).parseFromString(html, "text/html");
-          const og = doc.querySelector('meta[property="og:image"], meta[name="og:image"]');
-          const tw = doc.querySelector('meta[name="twitter:image"], meta[property="twitter:image"]');
-          const linkImg = doc.querySelector('link[rel="image_src"]');
-          let url = og?.getAttribute('content') || tw?.getAttribute('content') || linkImg?.getAttribute('href');
+          const metas = [
+            'meta[property="og:image"]',
+            'meta[name="og:image"]',
+            'meta[property="og:image:url"]',
+            'meta[name="twitter:image"]',
+            'meta[property="twitter:image"]',
+            'link[rel="image_src"]'
+          ];
+          let url = null;
+          for (const sel of metas) {
+            const el = doc.querySelector(sel);
+            if (el) { url = el.getAttribute('content') || el.getAttribute('href'); if (url) break; }
+          }
           if (!url) {
-            // tenta também <meta property="og:image:url">
-            const ogu = doc.querySelector('meta[property="og:image:url"]');
-            url = ogu?.getAttribute('content') || null;
+            // tenta imagens dentro do conteúdo
+            const bodyHtml = doc.documentElement.innerHTML;
+            const m = bodyHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
+            if (m) url = m[1];
           }
           if (url) {
             url = resolveUrl(it.link, url);
             it.image = url;
-            // atualiza card na UI (se existir)
-            const cardImg = document.querySelector(`[data-hash="${hash(it)}"] img[data-role="thumb"]`);
-            if (cardImg) { cardImg.src = url; }
+            // atualiza somente a imagem (sem re-render da lista para não mudar layout)
+            const selector = `[data-hash="${hash(it)}"] img[data-role="thumb"]`;
+            const cardImg = document.querySelector(selector);
+            if (cardImg) cardImg.src = url;
+            // highlights
+            const heroSel = `img[data-hero="${hash(it)}"]`;
+            const heroImg = document.querySelector(heroSel);
+            if (heroImg) heroImg.src = url;
           }
-        } catch (e) {
-          console.warn('og:image fail', it.link, e);
-        }
+        } catch (e) { console.warn('og:image fail', it.link, e); }
       }
     }
 
@@ -327,30 +350,34 @@
     }
 
     function renderHighlights(items) {
-      const withImg = items.filter(x => !!x.image);
-      const top = withImg.slice(0, 3);
-      if (!top.length) { highlights.classList.add('hidden'); highlightGrid.innerHTML = ''; return; }
-      highlights.classList.remove('hidden');
-
-      const [a, b, c] = [top[0], top[1], top[2]];
-      const colA = a ? `
-        <a href="${a.link}" target="_blank" rel="noopener" class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2">
-          <div class="relative">
-            <img referrerpolicy="no-referrer" src="${a.image}" alt="" class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />
-          </div>
-          <div class="p-4">
-            <div class="text-sm text-slate-500">${a.source} • ${formatDate(a.pubDate)}</div>
-            <h2 class="text-2xl font-bold mt-1 mb-2 leading-tight">${a.title}</h2>
-            <p class="text-slate-700 line-clamp-3">${(a.description||'').replace(/</g,'&lt;')}</p>
-          </div>
-        </a>` : '';
-
+      // Agora SEM depender de ter imagem — evita "pulo" de layout
+      const top = [...items].slice(0, 3);
+      const a = top[0], b = top[1], c = top[2];
+      function hero(x) {
+        if (!x) return '';
+        const id = hash(x);
+        return `
+          <a href="${x.link}" target="_blank" rel="noopener"
+             class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2">
+            <div class="relative">
+              ${x.image ? `<img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />`
+                        : `<div class="w-full h-64 lg:h-80 ph"></div>`}
+            </div>
+            <div class="p-4">
+              <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
+              <h2 class="text-2xl font-bold mt-1 mb-2 leading-tight">${x.title}</h2>
+              <p class="text-slate-700 line-clamp-3">${(x.description||'').replace(/</g,'&lt;')}</p>
+            </div>
+          </a>`;
+      }
       function smallCard(x) {
         if (!x) return '';
+        const id = hash(x);
         return `
           <a href="${x.link}" target="_blank" rel="noopener" class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
             <div class="relative">
-              <img referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />
+              ${x.image ? `<img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />`
+                        : `<div class="w-full h-44 ph"></div>`}
             </div>
             <div class="p-4">
               <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
@@ -358,19 +385,19 @@
             </div>
           </a>`;
       }
-
       highlightGrid.innerHTML = `
-        <div class="lg:col-span-2">${colA}</div>
+        <div class="lg:col-span-2">${hero(a)}</div>
         <div class="space-y-4">${smallCard(b)}${smallCard(c)}</div>
       `;
     }
 
     function renderList(items) {
       listEl.innerHTML = items.map(it => {
+        const id = hash(it);
         const img = it.image ? `<img data-role="thumb" referrerpolicy="no-referrer" src="${it.image}" alt="" class="w-28 h-28 rounded-md object-cover">`
-                             : `<div class="w-28 h-28 rounded-md bg-slate-100 flex items-center justify-center text-xs text-slate-400">Sem imagem</div>`;
+                             : `<div class="w-28 h-28 rounded-md ph"></div>`;
         return `
-        <article class="rounded-xl border border-slate-200 bg-white hover:shadow-sm transition p-4" data-hash="${hash(it)}">
+        <article class="rounded-xl border border-slate-200 bg-white hover:shadow-sm transition p-4" data-hash="${id}">
           <a href="${it.link}" target="_blank" rel="noopener" class="block">
             <div class="flex items-start gap-4">
               <div class="shrink-0">${img}</div>
@@ -386,12 +413,10 @@
     }
 
     function render() {
-      const items = applyFilters(ALL_ITEMS);
+      const items = applyFilters(ALL_ITEMS).sort((a,b) => b.pubDate - a.pubDate);
       emptyStateEl.classList.toggle('hidden', items.length > 0);
-
-      const sorted = [...items].sort((a,b) => b.pubDate - a.pubDate);
-      renderHighlights(sorted);
-      renderList(sorted);
+      renderHighlights(items);
+      renderList(items);
     }
 
     // ========= Fluxo principal =========
@@ -407,23 +432,19 @@
         try {
           const items = (await fetchRSS(s)).map(x => ({ ...x, description: normalizeText(x.description) }));
           ALL_ITEMS = ALL_ITEMS.concat(items);
-        } catch (e) {
-          console.warn('Erro em', s.name, e);
-        }
-        done++;
-        updateProgress(Math.round(done * 100 / Math.max(1,total)));
-        render(); // parcial
+        } catch (e) { console.warn('Erro em', s.name, e); }
+        done++; updateProgress(Math.round(done * 100 / Math.max(1,total)));
+        if (done === 1) render(); // primeira pintura rápida
       });
 
       await Promise.all(tasks);
-      ALL_ITEMS.sort((a, b) => b.pubDate - a.pubDate);
       render();
 
-      // Tentar preencher imagens faltantes (lazy) sem travar UX
-      tryFillMissingImages(ALL_ITEMS, 24).then(() => render());
+      // Preenche imagens que faltam SEM refazer o layout (apenas troca src)
+      tryFillMissingImages(ALL_ITEMS, 48);
 
       setStatus('Pronto');
-      setTimeout(() => { overlay.style.display = 'none'; }, 200);
+      setTimeout(() => { overlay.style.display = 'none'; }, 150);
     }
 
     // ========= Modal / Segurança simples =========
