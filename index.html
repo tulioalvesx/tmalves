@@ -54,7 +54,7 @@
           <button id="btnSettings"
             class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-50">Fontes</button>
         </div>
-        <!-- Ícone Instagram do Tulio -->
+        <!-- Ícone Instagram -->
         <a href="https://www.instagram.com/tulio.alvesx?igsh=MXJ3N3QyODc4bmVlcQ%3D%3D&utm_source=qr" target="_blank" rel="noopener"
            class="ml-3 inline-flex items-center justify-center p-1 rounded hover:bg-slate-100" aria-label="Instagram do Tulio">
           <img src="instagram-icone-icon.png" alt="Instagram" class="w-7 h-7 object-contain" />
@@ -71,7 +71,7 @@
 
   <!-- Main -->
   <main class="max-w-6xl mx-auto px-4 py-6">
-    <!-- Destaques sempre presente -->
+    <!-- Destaques 3 cards iguais -->
     <section id="highlights" class="mb-8">
       <div id="highlightGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-4"></div>
     </section>
@@ -79,7 +79,22 @@
     <!-- Lista vertical -->
     <section>
       <div id="list" class="grid grid-cols-1 gap-4"></div>
+      <div id="skeletonBox" class="space-y-3 my-6"></div>
       <p id="emptyState" class="text-slate-600 text-center py-12 hidden">Nenhuma notícia encontrada.</p>
+    </section>
+
+    <!-- UOL Jogos de Hoje -->
+    <section class="mt-12">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-semibold">Futebol — Jogos de Hoje (UOL)</h2>
+        <div class="flex items-center gap-2">
+          <label for="uolDate" class="text-sm text-slate-600">Data:</label>
+          <input id="uolDate" type="date" class="rounded-md border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-red-600">
+        </div>
+      </div>
+      <iframe id="uolFutebolFrame" class="w-full h-[1200px] rounded-xl border border-slate-200"
+              src="https://www.uol.com.br/esporte/futebol/central-de-jogos/#/"
+              loading="lazy"></iframe>
     </section>
   </main>
 
@@ -91,9 +106,9 @@
         <button class="px-2 py-1 rounded-md hover:bg-slate-100" value="cancel">Fechar</button>
       </div>
       <div class="p-5 space-y-4">
-        <p class="text-sm text-slate-600">Para viés telecom, já deixei **TeleSíntese** e **TELETIME** adicionadas.</p>
+        <p class="text-sm text-slate-600">Incluídas por padrão: TeleSíntese, TELETIME, G1, Folha e BBC Brasil.</p>
         <div class="grid grid-cols-1 sm:grid-cols-[1fr,auto] gap-3">
-          <input id="newSourceName" type="text" placeholder="Nome da fonte (ex.: TeleSíntese)"
+          <input id="newSourceName" type="text" placeholder="Nome da fonte"
                  class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600" />
           <input id="newSourceUrl" type="url" placeholder="URL do RSS/Atom"
                  class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600" />
@@ -119,11 +134,17 @@
     const LS_KEY = "tma_news_sources_v1";
     let SOURCES = [];
     let ALL_ITEMS = [];
+    let VISIBLE_ITEMS = []; // itens já renderizados na lista
+    const INITIAL_COUNT = 20;
+    const BATCH_SIZE = 10;
+    const MAX_SKELETONS = 50;
+
     const overlay = document.getElementById('loadingOverlay');
     const progressBar = document.getElementById('progressBar');
     const progressPct = document.getElementById('progressPct');
     const statusText  = document.getElementById('statusText');
     const listEl = document.getElementById('list');
+    const skeletonBox = document.getElementById('skeletonBox');
     const emptyStateEl = document.getElementById('emptyState');
     const sourceFilter = document.getElementById('sourceFilter');
     const searchInput = document.getElementById('searchInput');
@@ -141,10 +162,8 @@
 
     function defaultSources() {
       return [
-        // Telecom first
         { name: "TeleSíntese", url: "https://telesintese.com.br/feed/", type: "rss" },
         { name: "TELETIME", url: "https://teletime.com.br/feed/", type: "rss" },
-        // Gerais
         { name: "G1", url: "https://g1.globo.com/rss/g1/", type: "rss" },
         { name: "Folha", url: "https://feeds.folha.uol.com.br/emcimadahora/rss091.xml", type: "rss" },
         { name: "BBC Brasil", url: "https://feeds.bbci.co.uk/portuguese/rss.xml", type: "rss" }
@@ -302,7 +321,7 @@
     }
 
     // ========= Fallback OG:image (lazy) =========
-    async function tryFillMissingImages(items, max = 48) {
+    async function tryFillMissingImages(items, max = 64) {
       const targets = items.filter(x => !x.image).slice(0, max);
       for (const it of targets) {
         try {
@@ -352,49 +371,27 @@
       const term = searchInput.value.trim();
       return items.filter(it => (src === '__all__' || it.source === src) && matchesSearch(it, term));
     }
-    function hash(it) {
-      return btoa(unescape(encodeURIComponent((it.link||'') + '|' + (it.title||'')))).replace(/=+$/,'');
-    }
+    function hash(it) { return btoa(unescape(encodeURIComponent((it.link||'') + '|' + (it.title||'')))).replace(/=+$/,''); }
 
     function renderHighlights(items) {
-      // Apenas itens com imagem nos destaques
-      const withImg = items.filter(x => !!x.image);
-      const top = withImg.slice(0, 3);
-      const a = top[0], b = top[1], c = top[2];
-      function hero(x) {
-        if (!x) return '';
+      // Apenas itens com imagem; 3 cards iguais, altura h-72
+      const withImg = items.filter(x => !!x.image).slice(0, 3);
+      const html = withImg.map(x => {
         const id = hash(x);
         return `
-          <a href="${x.link}" target="_blank" rel="noopener"
-             class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2">
-            <div class="relative">
-              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />
-            </div>
-            <div class="p-4">
-              <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
-              <h2 class="text-2xl font-bold mt-1 mb-2 leading-tight">${x.title}</h2>
-              <p class="text-slate-700 line-clamp-3">${(x.description||'').replace(/</g,'&lt;')}</p>
-            </div>
-          </a>`;
-      }
-      function smallCard(x) {
-        if (!x) return '';
-        const id = hash(x);
-        return `
-          <a href="${x.link}" target="_blank" rel="noopener" class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
-            <div class="relative">
-              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />
-            </div>
-            <div class="p-4">
-              <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
-              <h3 class="text-lg font-semibold mt-1 line-clamp-2">${x.title}</h3>
-            </div>
-          </a>`;
-      }
-      highlightGrid.innerHTML = `
-        <div class="lg:col-span-2">${hero(a)}</div>
-        <div class="space-y-4">${smallCard(b)}${smallCard(c)}</div>
-      `;
+        <a href="${x.link}" target="_blank" rel="noopener"
+           class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
+          <div class="relative">
+            <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-72 object-cover group-hover:opacity-95 transition" />
+          </div>
+          <div class="p-4">
+            <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
+            <h2 class="text-xl font-bold mt-1 mb-2 leading-tight">${x.title}</h2>
+            <p class="text-slate-700 line-clamp-3">${(x.description||'').replace(/</g,'&lt;')}</p>
+          </div>
+        </a>`;
+      }).join('');
+      highlightGrid.innerHTML = html;
     }
 
     function imgTagForItem(it) {
@@ -406,29 +403,70 @@
       return `<div class="w-28 h-28 rounded-md ph"></div>`;
     }
 
-    function renderList(items) {
-      listEl.innerHTML = items.map(it => {
-        const id = hash(it);
-        const img = imgTagForItem(it);
-        return `
-        <article class="rounded-xl border border-slate-200 bg-white hover:shadow-sm transition p-4" data-hash="${id}">
-          <a href="${it.link}" target="_blank" rel="noopener" class="block">
-            <div class="flex items-start gap-4">
-              <div class="shrink-0">${img}</div>
-              <div class="min-w-0">
-                <div class="text-sm text-slate-500">${it.source} • ${formatDate(it.pubDate)}</div>
-                <h3 class="text-lg font-semibold mb-1">${it.title}</h3>
-                <p class="text-sm text-slate-700 line-clamp-3">${(it.description || '').replace(/</g,'&lt;')}</p>
-              </div>
+    function cardHTML(it) {
+      const id = hash(it);
+      const img = imgTagForItem(it);
+      return `
+      <article class="rounded-xl border border-slate-200 bg-white hover:shadow-sm transition p-4" data-hash="${id}">
+        <a href="${it.link}" target="_blank" rel="noopener" class="block">
+          <div class="flex items-start gap-4">
+            <div class="shrink-0">${img}</div>
+            <div class="min-w-0">
+              <div class="text-sm text-slate-500">${it.source} • ${formatDate(it.pubDate)}</div>
+              <h3 class="text-lg font-semibold mb-1">${it.title}</h3>
+              <p class="text-sm text-slate-700 line-clamp-3">${(it.description || '').replace(/</g,'&lt;')}</p>
             </div>
-          </a>
-        </article>`;
-      }).join('');
+          </div>
+        </a>
+      </article>`;
+    }
+
+    function renderListInitial(items) {
+      listEl.innerHTML = '';
+      VISIBLE_ITEMS = items.slice(0, INITIAL_COUNT);
+      listEl.innerHTML = VISIBLE_ITEMS.map(cardHTML).join('');
+      renderSkeletons(Math.min(MAX_SKELETONS, items.length - INITIAL_COUNT));
+    }
+
+    function renderSkeletons(n) {
+      skeletonBox.innerHTML = '';
+      const count = Math.max(0, Math.min(n, MAX_SKELETONS));
+      if (count === 0) return;
+      let h = '';
+      for (let i = 0; i < count; i++) {
+        h += `
+        <div class="rounded-xl border border-slate-200 bg-white p-4 animate-pulse">
+          <div class="flex items-start gap-4">
+            <div class="w-28 h-28 rounded-md ph"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3 w-1/3 ph rounded"></div>
+              <div class="h-4 w-2/3 ph rounded"></div>
+              <div class="h-3 w-5/6 ph rounded"></div>
+            </div>
+          </div>
+        </div>`;
+      }
+      skeletonBox.innerHTML = h;
+    }
+
+    function appendNextBatch(items) {
+      const start = VISIBLE_ITEMS.length;
+      const next = items.slice(start, start + BATCH_SIZE);
+      if (!next.length) { skeletonBox.innerHTML = ''; return; }
+      // mostra skeleton enquanto "carrega"
+      renderSkeletons(next.length);
+      setTimeout(() => {
+        VISIBLE_ITEMS = items.slice(0, start + next.length);
+        listEl.insertAdjacentHTML('beforeend', next.map(cardHTML).join(''));
+        // atualiza skeleton remanescente se ainda houver mais para carregar
+        const remain = items.length - VISIBLE_ITEMS.length;
+        renderSkeletons(Math.min(remain, MAX_SKELETONS - VISIBLE_ITEMS.length + INITIAL_COUNT));
+      }, 300);
     }
 
     function render() {
       let items = applyFilters(ALL_ITEMS).sort((a,b) => b.pubDate - a.pubDate);
-      // Priorização: quando "Todas as fontes", põe itens com imagem primeiro
+      // Prioriza os com imagem quando "Todas"
       if (sourceFilter.value === '__all__') {
         const withImg = items.filter(x => x.image);
         const withoutImg = items.filter(x => !x.image);
@@ -436,36 +474,37 @@
       }
       emptyStateEl.classList.toggle('hidden', items.length > 0);
       renderHighlights(items);
-      renderList(items);
+      renderListInitial(items);
+
+      // Infinite scroll
+      window.onscroll = () => {
+        const nearBottom = window.innerHeight + window.scrollY >= (document.body.offsetHeight - 600);
+        if (nearBottom) appendNextBatch(items);
+      };
     }
 
-    // ========= Fluxo principal =========
-    async function loadAll() {
-      overlay.style.display = 'grid';
-      setStatus('Carregando notícias…');
-      ALL_ITEMS = [];
-      const total = SOURCES.length;
-      let done = 0;
-      updateProgress(0);
-
-      const tasks = SOURCES.map(async (s) => {
-        try {
-          const items = (await fetchRSS(s)).map(x => ({ ...x, description: normalizeText(x.description) }));
-          ALL_ITEMS = ALL_ITEMS.concat(items);
-        } catch (e) { console.warn('Erro em', s.name, e); }
-        done++; updateProgress(Math.round(done * 100 / Math.max(1,total)));
-        if (done === 1) render(); // primeira pintura rápida
+    // ========= UOL jogos iframe control =========
+    const uolFrame = document.getElementById('uolFutebolFrame');
+    const uolDate = document.getElementById('uolDate');
+    function toYYYYMMDD(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+    function updateUOLIframe(dateStr) {
+      const url = `https://www.uol.com.br/esporte/futebol/central-de-jogos/#/${dateStr}`;
+      uolFrame.src = url;
+    }
+    (function initUOL() {
+      const today = new Date();
+      const ds = toYYYYMMDD(today);
+      uolDate.value = ds;
+      updateUOLIframe(ds);
+      uolDate.addEventListener('change', (e) => {
+        if (e.target.value) updateUOLIframe(e.target.value);
       });
-
-      await Promise.all(tasks);
-      render();
-
-      // Preenche imagens que faltam (logo da fonte já cobre visual, mas tentamos og:image)
-      tryFillMissingImages(ALL_ITEMS, 64).then(() => render());
-
-      setStatus('Pronto');
-      setTimeout(() => { overlay.style.display = 'none'; }, 150);
-    }
+    })();
 
     // ========= Modal / Segurança simples =========
     const settingsModal = document.getElementById('settingsModal');
@@ -524,7 +563,32 @@
     sourceFilter.addEventListener('change', render);
     searchInput.addEventListener('input', render);
 
-    // boot
+    // ========= Boot =========
+    async function loadAll() {
+      overlay.style.display = 'grid';
+      setStatus('Carregando notícias…');
+      ALL_ITEMS = [];
+      const total = SOURCES.length;
+      let done = 0;
+      updateProgress(0);
+
+      const tasks = SOURCES.map(async (s) => {
+        try {
+          const items = (await fetchRSS(s)).map(x => ({ ...x, description: normalizeText(x.description) }));
+          ALL_ITEMS = ALL_ITEMS.concat(items);
+        } catch (e) { console.warn('Erro em', s.name, e); }
+        done++; updateProgress(Math.round(done * 100 / Math.max(1,total)));
+        if (done === 1) render(); // primeira pintura rápida
+      });
+
+      await Promise.all(tasks);
+      render();
+
+      tryFillMissingImages(ALL_ITEMS, 64).then(() => {});
+      setStatus('Pronto');
+      setTimeout(() => { overlay.style.display = 'none'; }, 150);
+    }
+
     (async function init() {
       SOURCES = loadSources();
       populateSourceFilter();
