@@ -1,0 +1,393 @@
+<html lang="pt-BR"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TMA CORP • Notícias de Telecom</title>
+  <meta name="description" content="Cobertura quase em tempo real das principais fontes de Telecom no Brasil. Atualização automática via RSS.">
+  <link rel="icon" href="logo-escudo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .news-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+    .whats-float { position: fixed; right: 1rem; bottom: 1rem; width: 58px; height: 58px; border-radius: 9999px;
+      display: grid; place-items:center; background: #25D366; box-shadow: 0 6px 24px rgba(0,0,0,.18); z-index: 60; }
+    .whats-float img { width: 30px; height: 30px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.15)); }
+    .whats-float:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(0,0,0,.25); transition: all .2s ease; }
+    .thumb { width: 84px; height: 84px; object-fit: cover; border-radius: .5rem; }
+    .thumb-hero { width: 120px; height: 120px; object-fit: cover; border-radius: .75rem; }
+    /* Loading progress overlay */
+    #loadingOverlay { position: fixed; inset: 0; display:grid; place-items:center; background:#fff; z-index:70; }
+    #barWrap { width: 320px; height: 12px; border-radius: 9999px; background:#e5e7eb; overflow:hidden; }
+    #bar { height: 100%; width: 0%; background: linear-gradient(90deg,#2563eb,#10b981); transition: width .25s ease; }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.sticky{position:sticky}.top-0{top:0px}.bottom-4{bottom:1rem}.left-4{left:1rem}.z-50{z-index:50}.z-40{z-index:40}.col-span-1{grid-column:span 1 / span 1}.col-span-2{grid-column:span 2 / span 2}.col-span-4{grid-column:span 4 / span 4}.col-span-5{grid-column:span 5 / span 5}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-10{margin-bottom:2.5rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mt-10{margin-top:2.5rem}.mt-8{margin-top:2rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-2{height:0.5rem}.h-20{height:5rem}.h-7{height:1.75rem}.w-10{width:2.5rem}.w-2{width:0.5rem}.w-20{width:5rem}.w-7{width:1.75rem}.w-\[720px\]{width:720px}.w-full{width:100%}.max-w-3xl{max-width:48rem}.max-w-7xl{max-width:80rem}.max-w-\[92vw\]{max-width:92vw}.flex-1{flex:1 1 0%}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.rounded-t-xl{border-top-left-radius:0.75rem;border-top-right-radius:0.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202 / var(--tw-border-opacity, 1))}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-neutral-50{--tw-bg-opacity:1;background-color:rgb(250 250 250 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/80{background-color:rgb(255 255 255 / 0.8)}.bg-red-50{--tw-bg-opacity:1;background-color:rgb(254 242 242 / var(--tw-bg-opacity, 1))}.p-0{padding:0px}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-16{padding-top:4rem;padding-bottom:4rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.text-center{text-align:center}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.tracking-tight{letter-spacing:-0.025em}.text-neutral-500{--tw-text-opacity:1;color:rgb(115 115 115 / var(--tw-text-opacity, 1))}.text-neutral-600{--tw-text-opacity:1;color:rgb(82 82 82 / var(--tw-text-opacity, 1))}.text-neutral-900{--tw-text-opacity:1;color:rgb(23 23 23 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.backdrop-blur{--tw-backdrop-blur:blur(8px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop\:bg-black\/40::backdrop{background-color:rgb(0 0 0 / 0.4)}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216 / var(--tw-bg-opacity, 1))}.hover\:bg-neutral-100:hover{--tw-bg-opacity:1;background-color:rgb(245 245 245 / var(--tw-bg-opacity, 1))}@supports ((-webkit-backdrop-filter: var(--tw)) or (backdrop-filter: var(--tw))){.supports-\[backdrop-filter\]\:bg-white\/60{background-color:rgb(255 255 255 / 0.6)}}@media (min-width: 768px){.md\:inline{display:inline}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}.md\:justify-between{justify-content:space-between}.md\:text-2xl{font-size:1.5rem;line-height:2rem}.md\:text-sm{font-size:0.875rem;line-height:1.25rem}}</style><meta id="acfifjfajpekbmhmjppnmmjgmhjkildl"><meta id="nedeegdmhlnmboboahchfpkmdnnemapd"><meta id="dcngeagmmhegagicpcmpinaoklddcgon"></head>
+<body class="bg-neutral-50 text-neutral-900">
+  <!-- Loading overlay with progress bar -->
+  <div id="loadingOverlay" style="display: none;">
+    <div class="flex flex-col items-center gap-4">
+      <img src="logo-escudo.png" alt="TMA CORP" class="w-20 h-20 rounded">
+      <div id="barWrap"><div id="bar" style="width: 100%;"></div></div>
+      <p id="barText" class="text-sm text-neutral-600">Carregando… 100%</p>
+    </div>
+  </div>
+
+  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+      <img src="logo-escudo.png" alt="TMA CORP" class="w-10 h-10 rounded">
+      <div class="flex-1">
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight">TMA CORP • Notícias de Telecom</h1>
+        <p class="text-xs md:text-sm text-neutral-600">Atualiza automaticamente das fontes originais • estilo G1</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="https://www.instagram.com/tulio.alvesx?igsh=MXJ3N3QyODc4bmVlcQ%3D%3D&amp;utm_source=qr" target="_blank" title="Instagram">
+          <img src="instagram-icone-icon.png" alt="Instagram" class="w-7 h-7 rounded-md">
+        </a>
+        <a href="https://wa.me/5535998993464" target="_blank" title="WhatsApp">
+          <img src="WhatsApp-icone.png" alt="WhatsApp" class="w-7 h-7 rounded-full">
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <section class="border-b bg-white">
+    <div class="max-w-7xl mx-auto px-4 py-3 grid grid-cols-1 md:grid-cols-3 gap-3 md:items-center">
+      <div class="flex items-center gap-2 text-sm text-neutral-600">
+        <span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500" id="led"></span><span id="statusText">Pronto</span></span>
+        <span class="hidden md:inline">•</span>
+        <span>Atualiza a cada <strong id="refreshEach">15</strong> min</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <select id="sourceFilter" class="px-3 py-2 text-sm rounded-lg border bg-white"><option value="">Todas as fontes</option><option value="g1-tecnologia">G1 • Tecnologia</option></select>
+      </div>
+      <div class="flex items-center gap-2">
+        <input id="searchInput" type="search" placeholder="Buscar notícia…" class="px-3 py-2 text-sm rounded-lg border w-full">
+        <button id="searchBtn" class="px-3 py-2 text-sm rounded-lg border hover:bg-neutral-100">Pesquisar</button>
+      </div>
+    </div>
+  </section>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <section>
+      <h2 class="text-lg font-semibold mb-3">Manchetes</h2>
+      <div id="hero" class="grid md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <section class="mt-8">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-semibold">Últimas</h2>
+        <span id="countLabel" class="text-sm text-neutral-600"></span>
+      </div>
+      <div id="feed" class="grid gap-4 news-grid"></div>
+      <div id="emptyState" class="text-center text-neutral-500 py-16">
+        <p class="mb-2 font-medium">Nenhuma notícia encontrada</p>
+        <p class="text-sm">Tente limpar o filtro ou alterar a busca.</p>
+      </div>
+    </section>
+
+    <section id="contato" class="max-w-3xl mx-auto bg-white p-6 mt-10 mb-10 rounded-xl shadow">
+      <h2 class="text-xl font-semibold mb-4">Contato — TMA CORP</h2>
+      <form action="mailto:tulio.alves@tmalves.com.br" method="POST" enctype="text/plain" class="space-y-3">
+        <div>
+          <label class="block text-sm font-medium mb-1">Nome</label>
+          <input type="text" name="nome" required="" class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Telefone</label>
+          <input type="text" name="telefone" class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">E-mail</label>
+          <input type="email" name="email" required="" class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Descrição</label>
+          <textarea name="descricao" rows="3" class="w-full border rounded-lg px-3 py-2"></textarea>
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700">Enviar</button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="border-t bg-white">
+    <div class="max-w-7xl mx-auto px-4 py-6 text-sm text-neutral-600 flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
+      <p>© <span id="year">2025</span> TMA CORP • Curadoria automática de notícias de Telecom.</p>
+      <p>As manchetes e links são carregados dos sites de origem (RSS). Nenhum conteúdo é armazenado.</p>
+    </div>
+  </footer>
+
+  <a class="whats-float" href="https://wa.me/5535998993464" target="_blank" aria-label="Falar no WhatsApp">
+    <img src="WhatsApp-icone.png" alt="WhatsApp">
+  </a>
+
+  <dialog id="settingsModal" class="backdrop:bg-black/40 rounded-xl p-0 w-[720px] max-w-[92vw]" open="">
+    <form method="dialog" class="p-0">
+      <div class="p-4 border-b bg-white rounded-t-xl flex items-center justify-between">
+        <h3 class="font-semibold">Fontes de notícias (RSS)</h3>
+        <div class="flex items-center gap-2">
+          <button id="exportHTML" class="px-3 py-1.5 text-sm rounded border" title="Baixar index.html com as fontes embarcadas">Salvar no HTML</button>
+          <button class="px-2 py-1 text-sm rounded border">Fechar</button>
+        </div>
+      </div>
+      <div class="p-4 space-y-4 bg-white">
+        <p class="text-sm text-neutral-600">Edite as fontes abaixo. Clique em <strong>Salvar no HTML</strong> para baixar um novo <code>index.html</code> contendo as fontes no código. Depois é só fazer commit no Git.</p>
+        <div id="sourcesList" class="space-y-3">
+        <div class="grid grid-cols-12 gap-2 items-center" data-source-row="">
+          <input class="col-span-2 px-2 py-2 text-sm border rounded" name="id" value="g1-tecnologia" title="ID (único)">
+          <input class="col-span-4 px-2 py-2 text-sm border rounded" name="name" value="G1 • Tecnologia" placeholder="Nome da fonte">
+          <input class="col-span-5 px-2 py-2 text-sm border rounded" name="url" value="https://g1.globo.com/rss/g1/tecnologia/" placeholder="URL do RSS">
+          <button type="button" data-remove="0" class="col-span-1 px-2 py-2 text-sm rounded bg-red-50 border border-red-200 text-red-600">Remover</button>
+        </div>
+      </div>
+        <div class="flex items-center gap-2">
+          <button id="addSource" type="button" class="px-3 py-2 text-sm rounded border">Adicionar fonte</button>
+          <button id="saveSources" class="px-3 py-2 text-sm rounded bg-emerald-600 text-white">Salvar e recarregar</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const DEFAULT_SOURCES = [{"id":"g1-tecnologia","name":"G1 • Tecnologia","url":"https://g1.globo.com/rss/g1/tecnologia/"}];
+    const REFRESH_MINUTES = 15;
+    document.getElementById('refreshEach').textContent = REFRESH_MINUTES;
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Multi-proxy fallback
+    const pAllOrigins = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const pJinaHttp = (url) => `https://r.jina.ai/http://` + url.replace(/^https?:\/\//,''); // http
+    const pJinaHttps = (url) => `https://r.jina.ai/https://` + url.replace(/^https?:\/\//,''); // https
+
+    async function fetchWithFallback(url) {
+      const attempts = [pAllOrigins(url), pJinaHttps(url), pJinaHttp(url)];
+      let lastErr;
+      for (const u of attempts) {
+        try {
+          const res = await fetch(u);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return await res.text();
+        } catch (e) { lastErr = e; console.warn('Falha proxy', u, e); }
+      }
+      throw lastErr || new Error('Sem proxy disponível');
+    }
+
+    const loadSources = () => {
+      try { const saved = JSON.parse(localStorage.getItem('tm-news-sources')); if (Array.isArray(saved) && saved.length) return saved; } catch (e) {}
+      return DEFAULT_SOURCES;
+    };
+    const saveSources = (arr) => localStorage.setItem('tm-news-sources', JSON.stringify(arr));
+    let SOURCES = loadSources();
+    let ALL_ITEMS = [];
+
+    const sourceFilter = document.getElementById('sourceFilter');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const feedEl = document.getElementById('feed');
+    const heroEl = document.getElementById('hero');
+    const emptyEl = document.getElementById('emptyState');
+    const countLabel = document.getElementById('countLabel');
+    const overlay = document.getElementById('loadingOverlay');
+    const bar = document.getElementById('bar');
+    const barText = document.getElementById('barText');
+
+    function populateSourceFilter() {
+      sourceFilter.innerHTML = '<option value="">Todas as fontes</option>' + SOURCES.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+    }
+
+    function extractImageFromHTML(html){
+      if (!html) return null;
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      const img = div.querySelector('img');
+      return img ? img.getAttribute('src') : null;
+    }
+
+    async function fetchRSS(source) {
+      const text = await fetchWithFallback(source.url);
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(text, 'text/xml');
+      if (xml.querySelector('parsererror')) throw new Error('RSS inválido em ' + source.name);
+
+      let items = [...xml.querySelectorAll('item')].map(it=>({
+        title: it.querySelector('title')?.textContent?.trim() || 'Sem título',
+        link: it.querySelector('link')?.textContent?.trim() || '#',
+        pubDate: new Date(it.querySelector('pubDate')?.textContent || it.querySelector('dc\:date')?.textContent || Date.now()),
+        description: it.querySelector('description')?.textContent || '',
+        image: it.querySelector('media\:content, media\:thumbnail')?.getAttribute('url') || extractImageFromHTML(it.querySelector('description')?.textContent || ''),
+        source: source
+      }));
+      if (!items.length) {
+        items = [...xml.querySelectorAll('entry')].map(it=>({
+          title: it.querySelector('title')?.textContent?.trim() || 'Sem título',
+          link: it.querySelector('link')?.getAttribute('href') || '#',
+          pubDate: new Date(it.querySelector('updated')?.textContent || it.querySelector('published')?.textContent || Date.now()),
+          description: it.querySelector('summary')?.textContent || it.querySelector('content')?.textContent || '',
+          image: it.querySelector('media\:content, media\:thumbnail')?.getAttribute('url') || extractImageFromHTML(it.querySelector('content')?.textContent || ''),
+          source: source
+        }));
+      }
+      return items;
+    }
+
+    function normalizeText(html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    }
+
+    async function loadAll() {
+      setStatus('Carregando…');
+      ALL_ITEMS = [];
+      let done = 0;
+      const total = SOURCES.length;
+      updateProgress(0);
+      const tasks = SOURCES.map(async (s) => {
+        try {
+          const items = (await fetchRSS(s)).map(x=>({...x, description: normalizeText(x.description)}));
+          ALL_ITEMS = ALL_ITEMS.concat(items);
+        } catch (e) { console.warn('Erro em', s.name, e); }
+        done++; updateProgress(Math.round(done*100/total)); render(); // render parcial
+      });
+      await Promise.all(tasks);
+      ALL_ITEMS.sort((a,b)=> b.pubDate - a.pubDate);
+      render();
+      overlay.style.display = 'none';
+      setStatus('Pronto');
+    }
+
+    function updateProgress(p){
+      bar.style.width = p + '%';
+      barText.textContent = 'Carregando… ' + p + '%';
+    }
+
+    function setStatus(msg){ document.getElementById('statusText').textContent = msg; }
+
+    function render(){
+      const term = searchInput.value.toLowerCase().trim();
+      const filter = sourceFilter.value;
+      let items = ALL_ITEMS.filter(i => (!filter || i.source.id === filter) && (!term || (i.title + ' ' + i.description).toLowerCase().includes(term)) );
+      countLabel.textContent = items.length ? `${items.length} notícias` : '';
+      heroEl.innerHTML = items.slice(0,2).map(cardHero).join('');
+      feedEl.innerHTML = items.slice(2).map(card).join('');
+      emptyEl.classList.toggle('hidden', items.length>0);
+    }
+
+    function timeAgo(d){ const diff = Math.max(0, (Date.now()-d)/1000); const map = [['d',86400],['h',3600],['min',60]]; for (const [s,sec] of map){ if (diff>=sec) return `${Math.floor(diff/sec)} ${s}`; } return 'agora'; }
+    function safeURL(u){ try { return new URL(u).href } catch(e){ return '#' } }
+
+    function cardHero(item){
+      const img = item.image || 'logo-escudo.png';
+      return `
+      <article class="rounded-2xl border bg-white overflow-hidden group">
+        <a href="${safeURL(item.link)}" target="_blank" rel="noopener" class="block p-5">
+          <div class="flex items-start gap-4">
+            <img src="${img}" alt="thumb" class="thumb-hero" onerror="this.src='logo-escudo.png'" />
+            <div class="flex-1">
+              <div class="text-xs text-neutral-500 mb-2 flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full bg-neutral-100">${item.source.name}</span>
+                <span>•</span>
+                <time>${timeAgo(item.pubDate)} atrás</time>
+              </div>
+              <h3 class="text-xl font-bold leading-snug group-hover:underline">${item.title}</h3>
+              <p class="mt-2 text-sm text-neutral-700 line-clamp-3">${item.description}</p>
+            </div>
+          </div>
+        </a>
+      </article>`;
+    }
+
+    function card(item){
+      const img = item.image || 'logo-escudo.png';
+      return `
+      <article class="rounded-xl border bg-white overflow-hidden group">
+        <a href="${safeURL(item.link)}" target="_blank" rel="noopener" class="block p-4">
+          <div class="flex items-start gap-3">
+            <img src="${img}" alt="thumb" class="thumb" onerror="this.src='logo-escudo.png'" />
+            <div class="flex-1">
+              <div class="text-xs text-neutral-500 mb-1 flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full bg-neutral-100">${item.source.name}</span>
+                <span>•</span>
+                <time>${timeAgo(item.pubDate)} atrás</time>
+              </div>
+              <h3 class="font-semibold leading-snug group-hover:underline line-clamp-2">${item.title}</h3>
+              <p class="mt-1 text-sm text-neutral-700 line-clamp-2">${item.description}</p>
+            </div>
+          </div>
+        </a>
+      </article>`;
+    }
+
+    // Filtros & busca
+    sourceFilter.addEventListener('change', render);
+    searchInput.addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ e.preventDefault(); render(); } });
+    searchBtn.addEventListener('click', render);
+
+    // Modal protegido
+    const modal = document.getElementById('settingsModal');
+    const openBtn = document.createElement('button');
+    openBtn.textContent = 'Fontes';
+    openBtn.className = 'px-3 py-2 text-sm rounded-lg border hover:bg-neutral-100 fixed bottom-4 left-4 bg-white z-40';
+    openBtn.addEventListener('click', () => {
+      const u = prompt('Usuário:');
+      const p = u==='adm' ? prompt('Senha:') : '';
+      if (u==='adm' && p==='@mudar') { renderSourcesForm(); modal.showModal(); }
+      else alert('Acesso negado');
+    });
+    document.body.appendChild(openBtn);
+
+    document.getElementById('addSource').addEventListener('click', () => {
+      SOURCES.push({ id: 'fonte-'+Date.now(), name: 'Nova Fonte', url: '' });
+      renderSourcesForm();
+    });
+    document.getElementById('saveSources').addEventListener('click', (e) => {
+      e.preventDefault();
+      const rows = [...document.querySelectorAll('[data-source-row]')];
+      const next = rows.map(r => ({
+        id: r.querySelector('[name=id]').value.trim() || ('fonte-'+Math.random().toString(36).slice(2)),
+        name: r.querySelector('[name=name]').value.trim() || 'Sem nome',
+        url: r.querySelector('[name=url]').value.trim()
+      })).filter(x=>x.url);
+      saveSources(next);
+      SOURCES = loadSources();
+      populateSourceFilter();
+      modal.close();
+      loadAll();
+    });
+
+    function renderSourcesForm(){
+      const box = document.getElementById('sourcesList');
+      box.innerHTML = SOURCES.map((s,idx)=>`
+        <div class="grid grid-cols-12 gap-2 items-center" data-source-row>
+          <input class="col-span-2 px-2 py-2 text-sm border rounded" name="id" value="${s.id}" title="ID (único)" />
+          <input class="col-span-4 px-2 py-2 text-sm border rounded" name="name" value="${s.name}" placeholder="Nome da fonte" />
+          <input class="col-span-5 px-2 py-2 text-sm border rounded" name="url" value="${s.url}" placeholder="URL do RSS" />
+          <button type="button" data-remove="${idx}" class="col-span-1 px-2 py-2 text-sm rounded bg-red-50 border border-red-200 text-red-600">Remover</button>
+        </div>
+      `).join('');
+      box.querySelectorAll('[data-remove]').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const i = parseInt(e.currentTarget.getAttribute('data-remove'),10);
+          SOURCES.splice(i,1);
+          renderSourcesForm();
+        });
+      });
+    }
+
+    document.getElementById('exportHTML').addEventListener('click', (e)=>{
+      e.preventDefault();
+      const current = JSON.stringify(SOURCES).replace(/</g,'\u003c');
+      const html = document.documentElement.outerHTML.replace(/const DEFAULT_SOURCES = [\s\S]*?];/, `const DEFAULT_SOURCES = ${current};`);
+      const blob = new Blob([html], {type:'text/html'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'index.html';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    setInterval(loadAll, REFRESH_MINUTES*60*1000);
+    populateSourceFilter();
+    loadAll();
+  </script><button class="px-3 py-2 text-sm rounded-lg border hover:bg-neutral-100 fixed bottom-4 left-4 bg-white z-40">Fontes</button>
+
+
+</body></html>
