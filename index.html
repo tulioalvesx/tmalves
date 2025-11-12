@@ -11,31 +11,28 @@
     .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     .news-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-    .pulse { animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse { 0%{opacity:.6} 50%{opacity:1} 100%{opacity:.6} }
     .whats-float { position: fixed; right: 1rem; bottom: 1rem; width: 58px; height: 58px; border-radius: 9999px;
       display: grid; place-items:center; background: #25D366; box-shadow: 0 6px 24px rgba(0,0,0,.18); z-index: 60; }
     .whats-float img { width: 30px; height: 30px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.15)); }
     .whats-float:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(0,0,0,.25); transition: all .2s ease; }
-    /* Loading overlay */
-    #loadingOverlay { position: fixed; inset: 0; display:grid; place-items:center; background:#fff; z-index:70; }
-    .spinner { width: 42px; height: 42px; border: 4px solid #e5e7eb; border-top-color: #2563eb; border-radius: 9999px; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg) } }
     .thumb { width: 84px; height: 84px; object-fit: cover; border-radius: .5rem; }
     .thumb-hero { width: 120px; height: 120px; object-fit: cover; border-radius: .75rem; }
+    /* Loading progress overlay */
+    #loadingOverlay { position: fixed; inset: 0; display:grid; place-items:center; background:#fff; z-index:70; }
+    #barWrap { width: 320px; height: 12px; border-radius: 9999px; background:#e5e7eb; overflow:hidden; }
+    #bar { height: 100%; width: 0%; background: linear-gradient(90deg,#2563eb,#10b981); transition: width .25s ease; }
   </style>
 </head>
 <body class="bg-neutral-50 text-neutral-900">
-  <!-- Loading overlay -->
+  <!-- Loading overlay with progress bar -->
   <div id="loadingOverlay">
     <div class="flex flex-col items-center gap-4">
       <img src="logo-escudo.png" alt="TMA CORP" class="w-20 h-20 rounded" />
-      <div class="spinner"></div>
-      <p class="text-sm text-neutral-500">Carregando notícias…</p>
+      <div id="barWrap"><div id="bar"></div></div>
+      <p id="barText" class="text-sm text-neutral-600">Preparando… 0%</p>
     </div>
   </div>
 
-  <!-- Header -->
   <header class="sticky top-0 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
       <img src="logo-escudo.png" alt="TMA CORP" class="w-10 h-10 rounded" />
@@ -54,7 +51,6 @@
     </div>
   </header>
 
-  <!-- Top Bar: filtros e busca -->
   <section class="border-b bg-white">
     <div class="max-w-7xl mx-auto px-4 py-3 grid grid-cols-1 md:grid-cols-3 gap-3 md:items-center">
       <div class="flex items-center gap-2 text-sm text-neutral-600">
@@ -74,15 +70,12 @@
     </div>
   </section>
 
-  <!-- Conteúdo -->
   <main class="max-w-7xl mx-auto px-4 py-6">
-    <!-- Manchete -->
     <section>
       <h2 class="text-lg font-semibold mb-3">Manchetes</h2>
       <div id="hero" class="grid md:grid-cols-2 gap-4"></div>
     </section>
 
-    <!-- Lista de notícias -->
     <section class="mt-8">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-lg font-semibold">Últimas</h2>
@@ -95,7 +88,6 @@
       </div>
     </section>
 
-    <!-- Contato -->
     <section id="contato" class="max-w-3xl mx-auto bg-white p-6 mt-10 mb-10 rounded-xl shadow">
       <h2 class="text-xl font-semibold mb-4">Contato — TMA CORP</h2>
       <form action="mailto:tulio.alves@tmalves.com.br" method="POST" enctype="text/plain" class="space-y-3">
@@ -120,7 +112,6 @@
     </section>
   </main>
 
-  <!-- Rodapé -->
   <footer class="border-t bg-white">
     <div class="max-w-7xl mx-auto px-4 py-6 text-sm text-neutral-600 flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
       <p>© <span id="year"></span> TMA CORP • Curadoria automática de notícias de Telecom.</p>
@@ -128,12 +119,10 @@
     </div>
   </footer>
 
-  <!-- Floating WhatsApp -->
   <a class="whats-float" href="https://wa.me/5535998993464" target="_blank" aria-label="Falar no WhatsApp">
     <img src="WhatsApp-icone.png" alt="WhatsApp" />
   </a>
 
-  <!-- Modal de Fontes (protegido) -->
   <dialog id="settingsModal" class="backdrop:bg-black/40 rounded-xl p-0 w-[720px] max-w-[92vw]">
     <form method="dialog" class="p-0">
       <div class="p-4 border-b bg-white rounded-t-xl flex items-center justify-between">
@@ -162,10 +151,27 @@
       { id: 'anatel-noticias', name: 'Anatel (Notícias)', url: 'https://www.gov.br/anatel/pt-br/assuntos/noticias/@@RSS' },
       { id: 'convergencia', name: 'Convergência Digital', url: 'https://www.convergenciadigital.com.br/cgi/cgilua.exe/sys/start.htm?tpl=home&rss=1' }
     ];
-    const wrapCORS = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
     const REFRESH_MINUTES = 15;
     document.getElementById('refreshEach').textContent = REFRESH_MINUTES;
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Multi-proxy fallback
+    const pAllOrigins = (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const pJinaHttp = (url) => `https://r.jina.ai/http://` + url.replace(/^https?:\/\//,''); // http
+    const pJinaHttps = (url) => `https://r.jina.ai/https://` + url.replace(/^https?:\/\//,''); // https
+
+    async function fetchWithFallback(url) {
+      const attempts = [pAllOrigins(url), pJinaHttps(url), pJinaHttp(url)];
+      let lastErr;
+      for (const u of attempts) {
+        try {
+          const res = await fetch(u);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return await res.text();
+        } catch (e) { lastErr = e; console.warn('Falha proxy', u, e); }
+      }
+      throw lastErr || new Error('Sem proxy disponível');
+    }
 
     const loadSources = () => {
       try { const saved = JSON.parse(localStorage.getItem('tm-news-sources')); if (Array.isArray(saved) && saved.length) return saved; } catch (e) {}
@@ -183,6 +189,8 @@
     const emptyEl = document.getElementById('emptyState');
     const countLabel = document.getElementById('countLabel');
     const overlay = document.getElementById('loadingOverlay');
+    const bar = document.getElementById('bar');
+    const barText = document.getElementById('barText');
 
     function populateSourceFilter() {
       sourceFilter.innerHTML = '<option value="">Todas as fontes</option>' + SOURCES.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
@@ -197,10 +205,7 @@
     }
 
     async function fetchRSS(source) {
-      const target = wrapCORS(source.url);
-      const res = await fetch(target);
-      if (!res.ok) throw new Error('Falha ao buscar: ' + source.name);
-      const text = await res.text();
+      const text = await fetchWithFallback(source.url);
       const parser = new DOMParser();
       const xml = parser.parseFromString(text, 'text/xml');
       if (xml.querySelector('parsererror')) throw new Error('RSS inválido em ' + source.name);
@@ -233,22 +238,31 @@
     }
 
     async function loadAll() {
-      setStatus('Carregando…', true);
-      const promises = SOURCES.map(s => fetchRSS(s).catch(()=>[]));
-      const results = await Promise.all(promises);
-      ALL_ITEMS = results.flat().map(x=>({
-        ...x, description: normalizeText(x.description)
-      })).sort((a,b)=> b.pubDate - a.pubDate);
+      setStatus('Carregando…');
+      ALL_ITEMS = [];
+      let done = 0;
+      const total = SOURCES.length;
+      updateProgress(0);
+      const tasks = SOURCES.map(async (s) => {
+        try {
+          const items = (await fetchRSS(s)).map(x=>({...x, description: normalizeText(x.description)}));
+          ALL_ITEMS = ALL_ITEMS.concat(items);
+        } catch (e) { console.warn('Erro em', s.name, e); }
+        done++; updateProgress(Math.round(done*100/total)); render(); // render parcial
+      });
+      await Promise.all(tasks);
+      ALL_ITEMS.sort((a,b)=> b.pubDate - a.pubDate);
       render();
-      setStatus('Pronto');
       overlay.style.display = 'none';
+      setStatus('Pronto');
     }
 
-    function setStatus(msg, loading=false){
-      const el = document.getElementById('statusText');
-      el.textContent = msg;
-      document.getElementById('led').className = 'w-2 h-2 rounded-full ' + (loading ? 'bg-amber-500 pulse' : 'bg-emerald-500');
+    function updateProgress(p){
+      bar.style.width = p + '%';
+      barText.textContent = 'Carregando… ' + p + '%';
     }
+
+    function setStatus(msg){ document.getElementById('statusText').textContent = msg; }
 
     function render(){
       const term = searchInput.value.toLowerCase().trim();
@@ -310,7 +324,7 @@
     searchInput.addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ e.preventDefault(); render(); } });
     searchBtn.addEventListener('click', render);
 
-    // Modal protegido por senha simples
+    // Modal protegido
     const modal = document.getElementById('settingsModal');
     const openBtn = document.createElement('button');
     openBtn.textContent = 'Fontes';
@@ -361,7 +375,6 @@
       });
     }
 
-    // Baixar um index.html com as fontes embarcadas (para subir no Git)
     document.getElementById('exportHTML').addEventListener('click', (e)=>{
       e.preventDefault();
       const current = JSON.stringify(SOURCES).replace(/</g,'\u003c');
@@ -374,10 +387,7 @@
       URL.revokeObjectURL(a.href);
     });
 
-    // Auto-refresh
     setInterval(loadAll, REFRESH_MINUTES*60*1000);
-
-    // Boot
     populateSourceFilter();
     loadAll();
   </script>
