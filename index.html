@@ -373,26 +373,48 @@
     }
     function hash(it) { return btoa(unescape(encodeURIComponent((it.link||'') + '|' + (it.title||'')))).replace(/=+$/,''); }
 
+    
     function renderHighlights(items) {
-      // Apenas itens com imagem; 3 cards iguais, altura h-72
-      const withImg = items.filter(x => !!x.image).slice(0, 3);
-      const html = withImg.map(x => {
+      // Destaques 1x2: 1 grande à esquerda (col-span-2) + 2 pequenos empilhados à direita
+      const withImg = items.filter(x => !!x.image);
+      const a = withImg[0], b = withImg[1], c = withImg[2];
+      function hero(x) {
+        if (!x) return '';
         const id = hash(x);
         return `
-        <a href="${x.link}" target="_blank" rel="noopener"
-           class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
-          <div class="relative">
-            <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-72 object-cover group-hover:opacity-95 transition" />
-          </div>
-          <div class="p-4">
-            <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
-            <h2 class="text-xl font-bold mt-1 mb-2 leading-tight">${x.title}</h2>
-            <p class="text-slate-700 line-clamp-3">${(x.description||'').replace(/</g,'&lt;')}</p>
-          </div>
-        </a>`;
-      }).join('');
-      highlightGrid.innerHTML = html;
+          <a href="${x.link}" target="_blank" rel="noopener"
+             class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2">
+            <div class="relative">
+              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />
+            </div>
+            <div class="p-4">
+              <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
+              <h2 class="text-2xl font-bold mt-1 mb-2 leading-tight">${x.title}</h2>
+              <p class="text-slate-700 line-clamp-3">${(x.description||'').replace(/</g,'&lt;')}</p>
+            </div>
+          </a>`;
+      }
+      function smallCard(x) {
+        if (!x) return '';
+        const id = hash(x);
+        return `
+          <a href="${x.link}" target="_blank" rel="noopener" class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
+            <div class="relative">
+              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />
+            </div>
+            <div class="p-4">
+              <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
+              <h3 class="text-lg font-semibold mt-1 line-clamp-2">${x.title}</h3>
+            </div>
+          </a>`;
+      }
+      // Monta grid 1x2
+      highlightGrid.innerHTML = `
+        <div class="lg:col-span-2">${hero(a)}</div>
+        <div class="space-y-4">${smallCard(b)}${smallCard(c)}</div>
+      `;
     }
+
 
     function imgTagForItem(it) {
       const logo = SOURCE_LOGOS[it.source] || null;
