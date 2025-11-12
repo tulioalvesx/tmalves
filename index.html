@@ -194,8 +194,8 @@
       { name: 'CNN Brasil', url: 'https://www.cnnbrasil.com.br/feed', tag: 'cnn' }
     ];
 
-    const INITIAL_COUNT = 3;
-    const BATCH_SIZE = 7;
+    const INITIAL_COUNT = 20;
+    const BATCH_SIZE = 10;
     const MAX_SKELETONS = 30;
 
     let ALL_ITEMS = [];
@@ -315,7 +315,7 @@
           <a href="${x.link}" target="_blank" rel="noopener"
              class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2">
             <div class="relative">
-              <img loading="lazy" data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />
+              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />
             </div>
             <div class="p-4">
               <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
@@ -330,7 +330,7 @@
         return `
           <a href="${x.link}" target="_blank" rel="noopener" class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
             <div class="relative">
-              <img loading="lazy" data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />
+              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />
             </div>
             <div class="p-4">
               <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
@@ -352,7 +352,7 @@
       const logo = SOURCE_LOGOS[it.source] || null;
       if (it.image) {
         const id = hash(it);
-        return `<img loading="lazy" data-hero="${id}" referrerpolicy="no-referrer" src="${it.image}" alt="" class="w-full h-48 md:h-44 object-cover group-hover:opacity-95 transition" />`;
+        return `<img data-hero="${id}" referrerpolicy="no-referrer" src="${it.image}" alt="" class="w-full h-48 md:h-44 object-cover group-hover:opacity-95 transition" />`;
       }
       if (logo) {
         return `<div class="ph flex items-center justify-center w-full h-14"><img src="${logo}" alt="${it.source}" class="h-8 object-contain opacity-80" /></div>`;
