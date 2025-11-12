@@ -71,7 +71,7 @@
 
   <!-- Main -->
   <main class="max-w-6xl mx-auto px-4 py-6">
-    <!-- Destaques sempre presente (sem pular layout) -->
+    <!-- Destaques sempre presente -->
     <section id="highlights" class="mb-8">
       <div id="highlightGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-4"></div>
     </section>
@@ -91,8 +91,9 @@
         <button class="px-2 py-1 rounded-md hover:bg-slate-100" value="cancel">Fechar</button>
       </div>
       <div class="p-5 space-y-4">
+        <p class="text-sm text-slate-600">Para viés telecom, já deixei **TeleSíntese** e **TELETIME** adicionadas.</p>
         <div class="grid grid-cols-1 sm:grid-cols-[1fr,auto] gap-3">
-          <input id="newSourceName" type="text" placeholder="Nome da fonte (ex.: G1)"
+          <input id="newSourceName" type="text" placeholder="Nome da fonte (ex.: TeleSíntese)"
                  class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600" />
           <input id="newSourceUrl" type="url" placeholder="URL do RSS/Atom"
                  class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600" />
@@ -129,11 +130,24 @@
     const highlights = document.getElementById('highlights');
     const highlightGrid = document.getElementById('highlightGrid');
 
+    // Logos por fonte (fallback quando não houver imagem da matéria)
+    const SOURCE_LOGOS = {
+      "G1": "https://g1.globo.com/favicon.ico",
+      "Folha": "https://www.folha.uol.com.br/favicon.ico",
+      "BBC Brasil": "https://www.bbc.com/favicon.ico",
+      "TeleSíntese": "https://telesintese.com.br/wp-content/uploads/2020/02/cropped-favicon-192x192.png",
+      "TELETIME": "https://teletime.com.br/wp-content/uploads/2020/02/cropped-favicon-192x192.png"
+    };
+
     function defaultSources() {
       return [
+        // Telecom first
+        { name: "TeleSíntese", url: "https://telesintese.com.br/feed/", type: "rss" },
+        { name: "TELETIME", url: "https://teletime.com.br/feed/", type: "rss" },
+        // Gerais
         { name: "G1", url: "https://g1.globo.com/rss/g1/", type: "rss" },
         { name: "Folha", url: "https://feeds.folha.uol.com.br/emcimadahora/rss091.xml", type: "rss" },
-        { name: "BBC Brasil", url: "https://feeds.bbci.co.uk/portuguese/rss.xml", type: "rss" },
+        { name: "BBC Brasil", url: "https://feeds.bbci.co.uk/portuguese/rss.xml", type: "rss" }
       ];
     }
 
@@ -174,7 +188,7 @@
     // ========= Helpers =========
     function resolveUrl(base, url) { try { return new URL(url, base).href; } catch { return url; } }
 
-    // Heurística para corrigir texto com � (provável Latin1 mal decodado)
+    // Heurística para corrigir texto com � (feeds latin1)
     function fixEncoding(s) {
       if (!s || !s.includes('�')) return s;
       try {
@@ -211,7 +225,6 @@
       throw lastErr || new Error('Sem proxy disponível');
     }
     async function fetchRSS(source) {
-      // tenta uma vez; se vier texto bagunçado, tenta outra ordem
       let xml = await fetchTextThroughProxies(source.url);
       if (xml.includes('�')) {
         try {
@@ -289,7 +302,7 @@
     }
 
     // ========= Fallback OG:image (lazy) =========
-    async function tryFillMissingImages(items, max = 36) {
+    async function tryFillMissingImages(items, max = 48) {
       const targets = items.filter(x => !x.image).slice(0, max);
       for (const it of targets) {
         try {
@@ -309,21 +322,15 @@
             if (el) { url = el.getAttribute('content') || el.getAttribute('href'); if (url) break; }
           }
           if (!url) {
-            // tenta imagens dentro do conteúdo
-            const bodyHtml = doc.documentElement.innerHTML;
-            const m = bodyHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
+            const m = doc.documentElement.innerHTML.match(/<img[^>]+src=["']([^"']+)["']/i);
             if (m) url = m[1];
           }
           if (url) {
             url = resolveUrl(it.link, url);
             it.image = url;
-            // atualiza somente a imagem (sem re-render da lista para não mudar layout)
-            const selector = `[data-hash="${hash(it)}"] img[data-role="thumb"]`;
-            const cardImg = document.querySelector(selector);
+            const cardImg = document.querySelector(`[data-hash="${hash(it)}"] img[data-role="thumb"]`);
             if (cardImg) cardImg.src = url;
-            // highlights
-            const heroSel = `img[data-hero="${hash(it)}"]`;
-            const heroImg = document.querySelector(heroSel);
+            const heroImg = document.querySelector(`img[data-hero="${hash(it)}"]`);
             if (heroImg) heroImg.src = url;
           }
         } catch (e) { console.warn('og:image fail', it.link, e); }
@@ -350,8 +357,9 @@
     }
 
     function renderHighlights(items) {
-      // Agora SEM depender de ter imagem — evita "pulo" de layout
-      const top = [...items].slice(0, 3);
+      // Apenas itens com imagem nos destaques
+      const withImg = items.filter(x => !!x.image);
+      const top = withImg.slice(0, 3);
       const a = top[0], b = top[1], c = top[2];
       function hero(x) {
         if (!x) return '';
@@ -360,8 +368,7 @@
           <a href="${x.link}" target="_blank" rel="noopener"
              class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2">
             <div class="relative">
-              ${x.image ? `<img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />`
-                        : `<div class="w-full h-64 lg:h-80 ph"></div>`}
+              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />
             </div>
             <div class="p-4">
               <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
@@ -376,8 +383,7 @@
         return `
           <a href="${x.link}" target="_blank" rel="noopener" class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
             <div class="relative">
-              ${x.image ? `<img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />`
-                        : `<div class="w-full h-44 ph"></div>`}
+              <img data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />
             </div>
             <div class="p-4">
               <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
@@ -391,11 +397,19 @@
       `;
     }
 
+    function imgTagForItem(it) {
+      const logo = SOURCE_LOGOS[it.source] || null;
+      const src = it.image || logo;
+      if (src) {
+        return `<img data-role="thumb" referrerpolicy="no-referrer" src="${src}" alt="" class="w-28 h-28 rounded-md object-cover">`;
+      }
+      return `<div class="w-28 h-28 rounded-md ph"></div>`;
+    }
+
     function renderList(items) {
       listEl.innerHTML = items.map(it => {
         const id = hash(it);
-        const img = it.image ? `<img data-role="thumb" referrerpolicy="no-referrer" src="${it.image}" alt="" class="w-28 h-28 rounded-md object-cover">`
-                             : `<div class="w-28 h-28 rounded-md ph"></div>`;
+        const img = imgTagForItem(it);
         return `
         <article class="rounded-xl border border-slate-200 bg-white hover:shadow-sm transition p-4" data-hash="${id}">
           <a href="${it.link}" target="_blank" rel="noopener" class="block">
@@ -413,7 +427,13 @@
     }
 
     function render() {
-      const items = applyFilters(ALL_ITEMS).sort((a,b) => b.pubDate - a.pubDate);
+      let items = applyFilters(ALL_ITEMS).sort((a,b) => b.pubDate - a.pubDate);
+      // Priorização: quando "Todas as fontes", põe itens com imagem primeiro
+      if (sourceFilter.value === '__all__') {
+        const withImg = items.filter(x => x.image);
+        const withoutImg = items.filter(x => !x.image);
+        items = withImg.concat(withoutImg);
+      }
       emptyStateEl.classList.toggle('hidden', items.length > 0);
       renderHighlights(items);
       renderList(items);
@@ -440,8 +460,8 @@
       await Promise.all(tasks);
       render();
 
-      // Preenche imagens que faltam SEM refazer o layout (apenas troca src)
-      tryFillMissingImages(ALL_ITEMS, 48);
+      // Preenche imagens que faltam (logo da fonte já cobre visual, mas tentamos og:image)
+      tryFillMissingImages(ALL_ITEMS, 64).then(() => render());
 
       setStatus('Pronto');
       setTimeout(() => { overlay.style.display = 'none'; }, 150);
