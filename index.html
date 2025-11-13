@@ -295,11 +295,11 @@
     };
 
     const DEFAULT_SOURCES = [
-      { name: "G1",          url: "https://g1.globo.com/dynamo/rss2.xml" },
+      // { name: "G1",          url: "https://g1.globo.com/dynamo/rss2.xml" },
       { name: "BBC Brasil",  url: "https://www.bbc.com/portuguese/index.xml" },
-      { name: "CNN Brasil",  url: "https://www.cnnbrasil.com.br/feed/" },
-      { name: "TeleSíntese", url: "https://telesintese.com.br/feed/" },
-      { name: "Anatel",      url: "https://www.anatel.gov.br/institucional/index.php/sala-de-imprensa/releases?format=feed&type=rss" }
+      // { name: "CNN Brasil",  url: "https://www.cnnbrasil.com.br/feed/" },
+      // { name: "TeleSíntese", url: "https://telesintese.com.br/feed/" },
+      // { name: "Anatel",      url: "https://www.anatel.gov.br/institucional/index.php/sala-de-imprensa/releases?format=feed&type=rss" }
     ];
 
     const TELECOM_KEYWORDS = [
@@ -614,44 +614,60 @@ function renderHighlights(items) {
   `;
 }
     // ---------------------- Carregamento geral ----------------------
-    async function loadAll() {
-      loadingOverlay.style.display = "grid";
-      setStatus("Carregando notícias…");
-      updateProgress(0);
-      ALL_ITEMS = [];
-      VISIBLE_ITEMS = [];
-      newsList.innerHTML = "";
-      highlightGrid.innerHTML = "";
-      skeletonContainer.innerHTML = "";
-      emptyStateEl.classList.add("hidden");
+async function loadAll() {
+  // sempre mostra overlay quando começa
+  loadingOverlay.style.display = "grid";
+  setStatus("Carregando notícias…");
+  updateProgress(0);
 
-      const activeSources = getActiveSources();
-      const total = activeSources.length || 1;
-      let done = 0;
+  try {
+    ALL_ITEMS = [];
+    VISIBLE_ITEMS = [];
+    newsList.innerHTML = "";
+    highlightGrid.innerHTML = "";
+    skeletonContainer.innerHTML = "";
+    emptyStateEl.classList.add("hidden");
 
-      const tasks = activeSources.map(async (src) => {
-        try {
-          const items = await fetchRSS(src);
+    const activeSources = getActiveSources();
+    const total = activeSources.length || 1;
+    let done = 0;
+
+    const tasks = activeSources.map((src) =>
+      fetchRSS(src)
+        .then((items) => {
           ALL_ITEMS = ALL_ITEMS.concat(items);
-        } catch (err) {
+        })
+        .catch((err) => {
           console.warn("Erro ao carregar", src.name, err);
-        } finally {
+        })
+        .finally(() => {
           done++;
           const percent = Math.round((done * 100) / total);
           updateProgress(percent);
-        }
-      });
+        })
+    );
 
-      await Promise.allSettled(tasks);
+    // espera todo mundo acabar (com sucesso ou erro)
+    await Promise.allSettled(tasks);
 
-      if (!ALL_ITEMS.length) {
-        emptyStateEl.classList.remove("hidden");
-      }
+    if (!ALL_ITEMS.length) {
+      emptyStateEl.classList.remove("hidden");
+      setStatus("Nenhuma notícia carregada.");
+    } else {
       render();
       setStatus("Pronto");
-      setTimeout(() => { loadingOverlay.style.display = "none"; }, 300);
     }
-
+  } catch (e) {
+    console.error("Erro geral no loadAll:", e);
+    setStatus("Falha ao carregar notícias.");
+    emptyStateEl.classList.remove("hidden");
+  } finally {
+    // independente do que acontecer, some com o overlay
+    setTimeout(() => {
+      loadingOverlay.style.display = "none";
+    }, 300);
+  }
+}
     // --------------------- Admin UI helpers -------------------------
     function populateDefaultSourcesList() {
       defaultSourcesList.innerHTML = "";
