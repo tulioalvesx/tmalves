@@ -9,18 +9,33 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    dialog::backdrop { backdrop-filter: blur(1px); }
-    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .shadow-soft { box-shadow: 0 8px 24px rgba(0,0,0,.06); }
-    .bar-red { background-image: linear-gradient(to right, #d10, #f33); height: 3px; }
-    #progressBar { transition: width .25s ease; }
-    .ph { background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); }
+    dialog::backdrop { backdrop-filter: blur(2px); background: rgba(15,23,42,.25); }
+
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .shadow-soft { box-shadow: 0 8px 24px rgba(15,23,42,.08); }
+    .bar-red { background-image: linear-gradient(to right, #dc2626, #f97373); height: 3px; }
+    #progressBar { transition: width .2s ease; }
+    .ph {
+      background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%);
+    }
 
     @media (min-width: 1024px) {
-      /* Destaques 1x2 alinhados: 1 grande + coluna com 2 menores */
+      /* Destaques 1x2 alinhados: 1 grande + 2 empilhados na mesma altura */
       #highlightGrid {
+        display: grid;
         grid-template-columns: 2fr 1.3fr;
+        gap: 1rem;
         align-items: stretch;
       }
       #highlightGrid > div {
@@ -36,24 +51,26 @@
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
-  <!-- Loading Overlay -->
+  <!-- Overlay de Loading -->
   <div id="loadingOverlay" class="fixed inset-0 z-[100] grid place-items-center bg-white">
     <div class="w-[92vw] max-w-md text-center">
-      <img src="logo-escudo.png" alt="Logo" class="mx-auto w-28 h-28 object-contain mb-4" />
+      <img src="logo-escudo.png" alt="Logo TMA News" class="mx-auto w-28 h-28 object-contain mb-4" />
       <h1 class="text-2xl font-bold text-slate-800 mb-2">TMA News</h1>
       <p id="loadingStatus" class="text-slate-500 mb-4">Carregando notícias…</p>
       <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
         <div id="progressBar" class="bar-red w-0"></div>
       </div>
-      <p class="text-xs text-slate-400 mt-2">Buscando notícias do G1.</p>
+      <p class="text-xs text-slate-400 mt-2">
+        Buscando notícias em G1, BBC, CNN, TeleSíntese e Anatel com foco em Telecom.
+      </p>
     </div>
   </div>
 
   <div class="min-h-screen">
-    <!-- Top bar -->
+    <!-- Header -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
       <div class="max-w-6xl mx-auto px-4">
-        <div class="flex items-center justify-between py-3">
+        <div class="flex items-center justify-between py-3 gap-4">
           <div class="flex items-center gap-3">
             <img src="logo-escudo.png" alt="Logo" class="w-9 h-9" />
             <div>
@@ -61,31 +78,54 @@
                 <span class="font-semibold text-lg tracking-tight">TMA News</span>
                 <span class="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full uppercase">Beta</span>
               </div>
-              <p class="text-xs text-slate-500">Seu hub rápido de notícias das principais fontes.</p>
+              <p class="text-xs text-slate-500">
+                Seu hub rápido de notícias com foco em Telecom.
+              </p>
             </div>
           </div>
 
-          <div class="flex items-center gap-3">
-            <a href="https://www.instagram.com/tma.news" target="_blank" rel="noopener"
-              class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-400 text-white shadow-soft hover:scale-105 transition">
+          <div class="flex items-center gap-2">
+            <!-- Botão Instagram -->
+            <a
+              href="https://www.instagram.com/tma.news"
+              target="_blank"
+              rel="noopener"
+              class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-400 text-white shadow-soft hover:scale-105 transition"
+              title="Instagram TMA News"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Z" stroke="currentColor" stroke-width="1.5"/>
+                <rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.5"/>
                 <circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="1.5"/>
-                <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+                <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/>
               </svg>
             </a>
+
+            <!-- Botão Admin -->
+            <button
+              id="adminButton"
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition"
+              title="Administração de fontes"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M12 6.75a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5ZM4.5 12h.75M18.75 12h.75M12 18.75v.75M12 4.5V3.75M7.22 7.22l-.53-.53M17.31 17.31l-.53-.53M7.22 16.78l-.53.53M17.31 6.69l-.53.53"/>
+              </svg>
+              <span>Admin</span>
+            </button>
           </div>
         </div>
 
-        <!-- Search + filtros -->
+        <!-- Busca + Filtro -->
         <div class="pb-4">
           <div class="flex flex-col md:flex-row md:items-center gap-3">
+            <!-- Campo busca -->
             <div class="flex-1">
               <label class="sr-only" for="searchInput">Pesquisar notícias</label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M21 21l-4.35-4.35M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/>
                   </svg>
                 </span>
                 <input
@@ -95,16 +135,26 @@
                   class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-400 text-sm"
                 />
               </div>
+              <p class="text-[10px] text-slate-400 mt-1">
+                Sem digitar nada, o conteúdo é filtrado automaticamente para notícias de Telecom.
+              </p>
             </div>
 
+            <!-- Select fontes -->
             <div class="flex gap-2">
               <div>
                 <label class="sr-only" for="sourceFilter">Filtrar por fonte</label>
                 <select
                   id="sourceFilter"
-                  class="min-w-[140px] px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-400">
+                  class="min-w-[160px] px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-400"
+                >
                   <option value="__all__">Todas as fontes</option>
+                  <option value="telecom" selected>Telecom (todas as fontes)</option>
                   <option value="G1">G1</option>
+                  <option value="BBC Brasil">BBC Brasil</option>
+                  <option value="CNN Brasil">CNN Brasil</option>
+                  <option value="TeleSíntese">TeleSíntese</option>
+                  <option value="Anatel">Anatel</option>
                 </select>
               </div>
             </div>
@@ -113,17 +163,18 @@
       </div>
     </header>
 
-    <!-- Conteúdo principal -->
+    <!-- Conteúdo -->
     <main class="max-w-6xl mx-auto px-4 py-6">
       <!-- Destaques -->
       <section id="highlights" class="mb-8">
-        <div id="highlightGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-4"></div>
+        <div id="highlightGrid" class="grid grid-cols-1 gap-4"></div>
       </section>
 
       <!-- Lista de notícias -->
       <section>
         <div id="emptyState" class="hidden text-center py-16">
           <p class="text-slate-500">Nenhuma notícia encontrada para os filtros atuais.</p>
+          <p class="text-xs text-slate-400 mt-1">Tente ajustar a busca ou aguarde alguns instantes.</p>
         </div>
         <div id="newsList" class="space-y-3"></div>
         <div id="skeletonContainer" class="mt-4 space-y-3"></div>
@@ -131,35 +182,162 @@
     </main>
   </div>
 
-  <!-- Botão flutuante do WhatsApp -->
+  <!-- Botão flutuante WhatsApp -->
   <a
     href="https://wa.me/5535998993464?text=Ol%C3%A1%2C%20tenho%20interesse%20nos%20servi%C3%A7os%20da%20TMA%20IPTV."
     target="_blank"
     rel="noopener"
     class="fixed bottom-4 left-4 z-40 inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-500 text-white shadow-soft hover:bg-emerald-600 transition"
-    title="Fale pelo WhatsApp">
+    title="Fale pelo WhatsApp"
+  >
     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 32 32">
-      <path fill="currentColor" d="M16.01 5C10.49 5 6 9.48 6 14.99c0 2.17.63 3.86 1.71 5.22L6 27l6.96-1.71c1.27.7 2.74 1.1 4.3 1.1C21.52 26.39 26 21.9 26 16.39 26.01 10.89 21.53 5 16.01 5Zm0 19.74c-1.34 0-2.64-.36-3.77-1.03l-.27-.16-4.13 1.01 1.1-4.02-.18-.28A7.9 7.9 0 0 1 8.1 15c0-4.34 3.55-7.88 7.91-7.88 4.35 0 7.9 3.54 7.9 7.88-.01 4.35-3.56 7.89-7.9 7.89Zm4.33-5.9c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.77.94-.14.16-.29.18-.53.06-.24-.12-1.01-.37-1.93-1.18-.71-.62-1.19-1.39-1.33-1.63-.14-.24-.01-.37.11-.49.12-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.43-.06-.12-.54-1.3-.74-1.78-.19-.46-.39-.4-.53-.41h-.45c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.68 2.57 4.06 3.6.57.25 1.01.4 1.36.51.57.18 1.09.16 1.5.1.46-.07 1.42-.58 1.62-1.15.2-.57.2-1.05.14-1.15-.06-.1-.22-.16-.46-.28Z"/>
+      <path fill="currentColor"
+        d="M16.01 5C10.49 5 6 9.48 6 14.99c0 2.17.63 3.86 1.71 5.22L6 27l6.96-1.71c1.27.7 2.74 1.1 4.3 1.1C21.52 26.39 26 21.9 26 16.39 26.01 10.89 21.53 5 16.01 5Zm0 19.74c-1.34 0-2.64-.36-3.77-1.03l-.27-.16-4.13 1.01 1.1-4.02-.18-.28A7.9 7.9 0 0 1 8.1 15c0-4.34 3.55-7.88 7.91-7.88 4.35 0 7.9 3.54 7.9 7.88-.01 4.35-3.56 7.89-7.9 7.89Zm4.33-5.9c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.77.94-.14.16-.29.18-.53.06-.24-.12-1.01-.37-1.93-1.18-.71-.62-1.19-1.39-1.33-1.63-.14-.24-.01-.37.11-.49.12-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.43-.06-.12-.54-1.3-.74-1.78-.19-.46-.39-.4-.53-.41h-.45c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.68 2.57 4.06 3.6.57.25 1.01.4 1.36.51.57.18 1.09.16 1.5.1.46-.07 1.42-.58 1.62-1.15.2-.57.2-1.05.14-1.15-.06-.1-.22-.16-.46-.28Z"/>
     </svg>
   </a>
 
+  <!-- Dialog Login Admin -->
+  <dialog id="loginDialog" class="rounded-2xl border border-slate-200 bg-white shadow-2xl max-w-sm w-[92vw] p-0">
+    <form method="dialog" class="p-4 border-b border-slate-200 flex items-center justify-between">
+      <h2 class="font-semibold text-slate-800 text-sm">Login Administrativo</h2>
+      <button type="submit" class="text-slate-400 hover:text-slate-600">
+        ✕
+      </button>
+    </form>
+    <div class="p-4 space-y-3">
+      <p class="text-xs text-slate-500">
+        Acesso restrito para gestão de fontes do TMA News.
+      </p>
+      <div class="space-y-2">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Usuário</label>
+          <input id="adminUser" type="text" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-400" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Senha</label>
+          <input id="adminPass" type="password" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:border-sky-400" />
+        </div>
+      </div>
+      <p class="text-[10px] text-slate-400">
+        Usuário: <span class="font-mono">adm</span> &nbsp;•&nbsp; Senha: <span class="font-mono">@mudar</span>
+      </p>
+    </div>
+    <div class="p-3 border-t border-slate-200 flex justify-end gap-2">
+      <button type="submit" class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50">
+        Cancelar
+      </button>
+      <button id="loginSubmit" type="button" class="px-3 py-1.5 text-xs rounded-lg bg-sky-600 text-white hover:bg-sky-700">
+        Entrar
+      </button>
+    </div>
+  </dialog>
+
+  <!-- Dialog Admin -->
+  <dialog id="adminDialog" class="rounded-2xl border border-slate-200 bg-white shadow-2xl max-w-lg w-[95vw] p-0">
+    <form method="dialog" class="p-4 border-b border-slate-200 flex items-center justify-between">
+      <h2 class="font-semibold text-slate-800 text-sm">Gerenciar Fontes</h2>
+      <button type="submit" class="text-slate-400 hover:text-slate-600">✕</button>
+    </form>
+    <div class="p-4 space-y-4 text-sm">
+      <p class="text-slate-500">
+        Aqui você pode visualizar as fontes padrão e incluir/remover fontes RSS personalizadas.
+      </p>
+
+      <div class="border border-slate-200 rounded-xl p-3 bg-slate-50">
+        <h3 class="font-semibold text-slate-700 text-xs mb-2">Fontes padrão (fixas)</h3>
+        <ul id="defaultSourcesList" class="space-y-1 text-xs text-slate-600"></ul>
+      </div>
+
+      <div class="border border-slate-200 rounded-xl p-3">
+        <h3 class="font-semibold text-slate-700 text-xs mb-2">Fontes personalizadas</h3>
+        <ul id="customSourcesList" class="space-y-1 text-xs text-slate-600 mb-3"></ul>
+
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-2 items-end">
+          <div class="md:col-span-2">
+            <label class="block text-[11px] font-medium text-slate-600 mb-1">Nome da fonte</label>
+            <input id="newSourceName" type="text" class="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400" placeholder="Ex: Meu RSS" />
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-[11px] font-medium text-slate-600 mb-1">URL (RSS)</label>
+            <input id="newSourceUrl" type="text" class="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400" placeholder="https://..." />
+          </div>
+          <div class="md:col-span-5 flex justify-end">
+            <button id="addSourceBtn" type="button" class="px-3 py-1.5 text-xs rounded-lg bg-emerald-500 text-white hover:bg-emerald-600">
+              Adicionar fonte
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="p-3 border-t border-slate-200 flex justify-between items-center">
+      <button id="logoutBtn" type="button" class="px-3 py-1.5 text-[11px] rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50">
+        Sair do Admin
+      </button>
+      <div class="flex gap-2">
+        <button type="submit" class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50">
+          Fechar
+        </button>
+        <button id="reloadNewsBtn" type="button" class="px-3 py-1.5 text-xs rounded-lg bg-sky-600 text-white hover:bg-sky-700">
+          Atualizar notícias
+        </button>
+      </div>
+    </div>
+  </dialog>
+
   <script>
+    // --------------------- Configurações ----------------------
     const SOURCE_LOGOS = {
-      "G1": "https://s2-g1.glbimg.com/PhC0JtAfw_pHYqms4D3GRD5Wz1I=/0x0:1200x675/fit-in/1200x675/middle/smart/filters:strip_icc()/s.glbimg.com/og/rg/static/img/facebook/g1.png"
+      "G1": "https://s2-g1.glbimg.com/PhC0JtAfw_pHYqms4D3GRD5Wz1I=/0x0:1200x675/fit-in/1200x675/middle/smart/filters:strip_icc()/s.glbimg.com/og/rg/static/img/facebook/g1.png",
+      "BBC Brasil": "https://ichef.bbci.co.uk/news/1024/branded_portuguese/173B2/production/_117544600_bbc_news_brasil_logo-nc.png",
+      "CNN Brasil": "https://www.cnnbrasil.com.br/wp-content/themes/cnn/assets/img/logos/CNNBrasil-NoBox-Red.png",
+      "TeleSíntese": "https://telesintese.com.br/wp-content/uploads/2019/09/cropped-logo-telesintese-1.png",
+      "Anatel": "https://www.anatel.gov.br/Portal/verblob.php?tipo=img&nome=_anatel-vertical.png"
     };
 
-    const SOURCES = [
-      { name: "G1", url: "https://g1.globo.com/dynamo/rss2.xml" }
+    const DEFAULT_SOURCES = [
+      { name: "G1",          url: "https://g1.globo.com/dynamo/rss2.xml" },
+      { name: "BBC Brasil",  url: "https://www.bbc.com/portuguese/index.xml" },
+      { name: "CNN Brasil",  url: "https://www.cnnbrasil.com.br/feed/" },
+      { name: "TeleSíntese", url: "https://telesintese.com.br/feed/" },
+      { name: "Anatel",      url: "https://www.anatel.gov.br/institucional/index.php/sala-de-imprensa/releases?format=feed&type=rss" }
+    ];
+
+    const TELECOM_KEYWORDS = [
+      "telecom", "telecomunicações", "telecomunicacoes",
+      "fibra", "fibra óptica", "fibra otica",
+      "5g", "4g", "3g",
+      "banda larga", "banda-larga",
+      "backbone", "backhaul",
+      "rede móvel", "rede movel",
+      "infraestrutura", "espectro",
+      "frequência", "frequencia",
+      "antena", "estações rádio base", "estacao radio base",
+      "regulação", "regulacao", "regulatório", "regulatorio",
+      "agência", "agencia",
+      "operadora", "operadoras",
+      "provedor", "provedores",
+      "ftth", "fttx", "ftta",
+      "dwdm",
+
+      "anatel",
+      "claro", "vivo", "tim", "oi",
+      "giga+", "giga +", "giga plus", "giga plus fibra",
+      "alares", "brisanet", "americanet", "ligga", "vero"
     ];
 
     const INITIAL_COUNT = 3;
     const BATCH_SIZE = 7;
     const MAX_SKELETONS = 30;
 
+    const LS_CUSTOM_SOURCES = "tma_news_custom_sources_v1";
+    const LS_ADMIN_LOGGED   = "tma_news_admin_logged_v1";
+
     let ALL_ITEMS = [];
     let VISIBLE_ITEMS = [];
     let FILTER_TEXT = "";
-    let FILTER_SOURCE = "__all__";
+    let FILTER_SOURCE = "telecom"; // valor inicial
+
+    let customSources = [];
 
     const searchInput = document.getElementById("searchInput");
     const sourceFilter = document.getElementById("sourceFilter");
@@ -171,6 +349,20 @@
     const progressBar = document.getElementById("progressBar");
     const loadingStatus = document.getElementById("loadingStatus");
 
+    const adminButton = document.getElementById("adminButton");
+    const loginDialog = document.getElementById("loginDialog");
+    const adminDialog = document.getElementById("adminDialog");
+    const adminUserInput = document.getElementById("adminUser");
+    const adminPassInput = document.getElementById("adminPass");
+    const loginSubmitBtn = document.getElementById("loginSubmit");
+    const defaultSourcesList = document.getElementById("defaultSourcesList");
+    const customSourcesList = document.getElementById("customSourcesList");
+    const newSourceName = document.getElementById("newSourceName");
+    const newSourceUrl = document.getElementById("newSourceUrl");
+    const addSourceBtn = document.getElementById("addSourceBtn");
+    const reloadNewsBtn = document.getElementById("reloadNewsBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
     function setStatus(msg) {
       loadingStatus.textContent = msg;
     }
@@ -179,6 +371,54 @@
       progressBar.style.width = percent + "%";
     }
 
+    // -------------------- LocalStorage helpers ----------------------
+    function loadCustomSources() {
+      try {
+        const data = localStorage.getItem(LS_CUSTOM_SOURCES);
+        if (!data) {
+          customSources = [];
+          return;
+        }
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) {
+          customSources = parsed;
+        } else {
+          customSources = [];
+        }
+      } catch {
+        customSources = [];
+      }
+    }
+
+    function saveCustomSources() {
+      try {
+        localStorage.setItem(LS_CUSTOM_SOURCES, JSON.stringify(customSources));
+      } catch {}
+    }
+
+    function isAdminLogged() {
+      try {
+        return localStorage.getItem(LS_ADMIN_LOGGED) === "true";
+      } catch {
+        return false;
+      }
+    }
+
+    function setAdminLogged(flag) {
+      try {
+        if (flag) {
+          localStorage.setItem(LS_ADMIN_LOGGED, "true");
+        } else {
+          localStorage.removeItem(LS_ADMIN_LOGGED);
+        }
+      } catch {}
+    }
+
+    function getActiveSources() {
+      return DEFAULT_SOURCES.concat(customSources || []);
+    }
+
+    // ------------------- Utilidades de texto/data -------------------
     function normalizeText(str) {
       if (!str) return "";
       return str.replace(/<\/?[^>]+(>|$)/g, "").replace(/\s+/g, " ").trim();
@@ -200,18 +440,28 @@
       }
     }
 
+    function hashItem(it) {
+      return btoa(unescape(encodeURIComponent((it.link || "") + "|" + (it.title || "")))).replace(/=+$/, "");
+    }
+
+    function isTelecomItem(it) {
+      const text = ((it.title || "") + " " + (it.description || "")).toLowerCase();
+      return TELECOM_KEYWORDS.some(kw => text.includes(kw));
+    }
+
+    // --------------------- Parser de imagem -------------------------
     function extractImageFromItem(item) {
-      // tenta <enclosure>
+      // 1) enclosure
       const enclosure = item.querySelector("enclosure");
       if (enclosure && enclosure.getAttribute("url")) {
         return enclosure.getAttribute("url");
       }
-      // tenta <media:content>
+      // 2) media:content
       const media = item.querySelector("media\\:content, content");
       if (media && media.getAttribute("url")) {
         return media.getAttribute("url");
       }
-      // tenta <img> dentro do description
+      // 3) <img> dentro do description
       const descNode = item.querySelector("description");
       if (descNode && descNode.textContent) {
         const html = descNode.textContent;
@@ -221,15 +471,18 @@
       return null;
     }
 
+    // -------------------- Fetch RSS com AllOrigins ------------------
     async function fetchRSS(source) {
       const url = source.url;
-      const proxied = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
-      const response = await fetch(proxied);
-      if (!response.ok) throw new Error("Erro ao buscar RSS");
-      const data = await response.json();
-      const text = data.contents;
+      const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+      const resp = await fetch(proxyUrl);
+      if (!resp.ok) {
+        throw new Error("Falha ao acessar " + source.name);
+      }
+      const data = await resp.json();
+      const contents = data.contents;
       const parser = new DOMParser();
-      const xml = parser.parseFromString(text, "text/xml");
+      const xml = parser.parseFromString(contents, "text/xml");
       const items = Array.from(xml.querySelectorAll("item")).slice(0, 60);
       return items.map(item => {
         const title = item.querySelector("title")?.textContent || "";
@@ -237,6 +490,7 @@
         const description = item.querySelector("description")?.textContent || "";
         const pubDate = item.querySelector("pubDate")?.textContent || "";
         const image = extractImageFromItem(item);
+
         return {
           source: source.name,
           title,
@@ -248,61 +502,92 @@
       });
     }
 
-    function applyFilters(items) {
+    // ------------------------ Filtros -------------------------------
+    function applyFilters(baseItems) {
+      let items = baseItems.slice();
       const term = FILTER_TEXT.trim().toLowerCase();
       const src = FILTER_SOURCE;
-      return items.filter(it => {
-        const matchesSource = (src === "__all__" || it.source === src);
-        const matchesSearch =
-          !term ||
-          (it.title && it.title.toLowerCase().includes(term)) ||
-          (it.description && it.description.toLowerCase().includes(term));
-        return matchesSource && matchesSearch;
-      });
+
+      // Filtro por fonte (exceto "telecom" e "__all__")
+      if (src && src !== "__all__" && src !== "telecom") {
+        items = items.filter(it => it.source === src);
+      }
+
+      if (!term) {
+        // Nenhuma busca: SEMPRE aplica filtro Telecom
+        items = items.filter(isTelecomItem);
+      } else {
+        // Com busca: ignora filtro Telecom, filtra por texto
+        items = items.filter(it => {
+          const t = (it.title || "").toLowerCase();
+          const d = (it.description || "").toLowerCase();
+          return t.includes(term) || d.includes(term);
+        });
+      }
+
+      // Ordenar por data desc e priorizar itens com imagem
+      items.sort((a, b) => b.pubDate - a.pubDate);
+      const withImg = items.filter(x => x.image);
+      const withoutImg = items.filter(x => !x.image);
+
+      return withImg.concat(withoutImg);
     }
 
-    function hash(it) {
-      return btoa(unescape(encodeURIComponent((it.link || "") + "|" + (it.title || "")))).replace(/=+$/, "");
-    }
-
+    // ---------------------- Renderização UI -------------------------
     function renderHighlights(items) {
-      const withImg = items.filter(x => !!x.image);
-      if (!withImg.length) {
+      if (!items || !items.length) {
         highlightGrid.innerHTML = "";
         return;
       }
-      const a = withImg[0];
-      const b = withImg[1];
-      const c = withImg[2];
+      const a = items[0];
+      const b = items[1];
+      const c = items[2];
 
       function hero(x) {
         if (!x) return "";
-        const id = hash(x);
+        const id = hashItem(x);
         return `
           <a href="${x.link}" target="_blank" rel="noopener"
              class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200 lg:col-span-2">
             <div class="relative">
-              <img loading="lazy" data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />
+              <img loading="lazy" data-hero="${id}" referrerpolicy="no-referrer"
+                   src="${x.image || (SOURCE_LOGOS[x.source] || '')}" alt=""
+                   class="w-full h-64 lg:h-80 object-cover group-hover:opacity-95 transition" />
             </div>
             <div class="p-4">
               <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
-              <h2 class="text-2xl font-bold mt-1 mb-2 leading-tight">${x.title}</h2>
-              <p class="text-slate-700 line-clamp-3">${(x.description || "").replace(/</g, "&lt;")}</p>
+              <h2 class="text-2xl font-bold mt-1 mb-2 leading-tight group-hover:text-sky-600">
+                ${x.title}
+              </h2>
+              <p class="text-slate-700 line-clamp-3">
+                ${(x.description || "").replace(/</g, "&lt;")}
+              </p>
             </div>
           </a>`;
       }
 
       function smallCard(x) {
         if (!x) return "";
-        const id = hash(x);
+        const id = hashItem(x);
+        const img = x.image || SOURCE_LOGOS[x.source] || "";
+        const imgHtml = img
+          ? `<img loading="lazy" data-hero="${id}" referrerpolicy="no-referrer"
+                   src="${img}" alt=""
+                   class="w-full h-44 object-cover group-hover:opacity-95 transition" />`
+          : `<div class="ph flex items-center justify-center w-full h-32 text-xs text-slate-500 uppercase tracking-wide">
+               ${x.source}
+             </div>`;
         return `
-          <a href="${x.link}" target="_blank" rel="noopener" class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
+          <a href="${x.link}" target="_blank" rel="noopener"
+             class="group block rounded-xl overflow-hidden bg-white shadow-soft border border-slate-200">
             <div class="relative">
-              <img loading="lazy" data-hero="${id}" referrerpolicy="no-referrer" src="${x.image}" alt="" class="w-full h-44 object-cover group-hover:opacity-95 transition" />
+              ${imgHtml}
             </div>
             <div class="p-4">
               <div class="text-sm text-slate-500">${x.source} • ${formatDate(x.pubDate)}</div>
-              <h3 class="text-lg font-semibold mt-1 line-clamp-2">${x.title}</h3>
+              <h3 class="text-lg font-semibold mt-1 line-clamp-2 group-hover:text-sky-600">
+                ${x.title}
+              </h3>
             </div>
           </a>`;
       }
@@ -319,19 +604,26 @@
     function imgTagForItem(it) {
       const logo = SOURCE_LOGOS[it.source] || null;
       if (it.image) {
-        const id = hash(it);
-        return `<img loading="lazy" data-hero="${id}" referrerpolicy="no-referrer" src="${it.image}" alt="" class="w-full h-48 md:h-44 object-cover group-hover:opacity-95 transition" />`;
+        const id = hashItem(it);
+        return `<img loading="lazy" data-hero="${id}" referrerpolicy="no-referrer"
+                     src="${it.image}" alt=""
+                     class="w-full h-48 md:h-44 object-cover group-hover:opacity-95 transition" />`;
       }
       if (logo) {
-        return `<div class="ph flex items-center justify-center w-full h-14"><img src="${logo}" alt="${it.source}" class="h-8 object-contain opacity-80" /></div>`;
+        return `<div class="ph flex items-center justify-center w-full h-24">
+                  <img src="${logo}" alt="${it.source}" class="h-10 object-contain opacity-80" />
+                </div>`;
       }
-      return `<div class="ph flex items-center justify-center w-full h-14 text-slate-500 text-xs uppercase tracking-wide">${it.source}</div>`;
+      return `<div class="ph flex items-center justify-center w-full h-24 text-xs text-slate-500 uppercase tracking-wide">
+                ${it.source}
+              </div>`;
     }
 
     function cardHTML(it) {
       return `
         <article class="group rounded-xl bg-white border border-slate-200 shadow-soft overflow-hidden">
-          <a href="${it.link}" target="_blank" rel="noopener" class="flex flex-col md:flex-row">
+          <a href="${it.link}" target="_blank" rel="noopener"
+             class="flex flex-col md:flex-row">
             <div class="md:w-48 md:flex-shrink-0">
               ${imgTagForItem(it)}
             </div>
@@ -389,47 +681,53 @@
     }
 
     function render() {
-      let items = applyFilters(ALL_ITEMS).sort((a, b) => b.pubDate - a.pubDate);
-      emptyStateEl.classList.toggle("hidden", items.length > 0);
+      const filtered = applyFilters(ALL_ITEMS);
+      emptyStateEl.classList.toggle("hidden", filtered.length > 0);
 
-      if (!items.length) {
+      if (!filtered.length) {
         highlightGrid.innerHTML = "";
         newsList.innerHTML = "";
         skeletonContainer.innerHTML = "";
         return;
       }
 
-      // Prioriza itens com imagem no topo
-      const withImg = items.filter(x => x.image);
-      const withoutImg = items.filter(x => !x.image);
-      items = withImg.concat(withoutImg);
-
-      renderHighlights(items);
-      renderListInitial(items);
+      renderHighlights(filtered);
+      renderListInitial(filtered);
 
       window.onscroll = () => {
-        const nearBottom = window.innerHeight + window.scrollY >= (document.body.offsetHeight - 600);
-        if (nearBottom) appendNextBatch(items);
+        const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 600;
+        if (nearBottom) {
+          appendNextBatch(filtered);
+        }
       };
     }
 
+    // ---------------------- Carregamento geral ----------------------
     async function loadAll() {
       loadingOverlay.style.display = "grid";
       setStatus("Carregando notícias…");
-      ALL_ITEMS = [];
-      const total = SOURCES.length;
-      let done = 0;
       updateProgress(0);
+      ALL_ITEMS = [];
+      VISIBLE_ITEMS = [];
+      newsList.innerHTML = "";
+      highlightGrid.innerHTML = "";
+      skeletonContainer.innerHTML = "";
+      emptyStateEl.classList.add("hidden");
 
-      const tasks = SOURCES.map(async (s) => {
+      const activeSources = getActiveSources();
+      const total = activeSources.length || 1;
+      let done = 0;
+
+      const tasks = activeSources.map(async (src) => {
         try {
-          const items = await fetchRSS(s);
+          const items = await fetchRSS(src);
           ALL_ITEMS = ALL_ITEMS.concat(items);
-        } catch (e) {
-          console.warn("Erro em", s.name, e);
+        } catch (err) {
+          console.warn("Erro ao carregar", src.name, err);
         } finally {
           done++;
-          updateProgress(Math.round(done * 100 / Math.max(1, total)));
+          const percent = Math.round((done * 100) / total);
+          updateProgress(percent);
         }
       });
 
@@ -438,23 +736,127 @@
       if (!ALL_ITEMS.length) {
         emptyStateEl.classList.remove("hidden");
       }
-
       render();
       setStatus("Pronto");
-      setTimeout(() => { loadingOverlay.style.display = "none"; }, 200);
+      setTimeout(() => { loadingOverlay.style.display = "none"; }, 300);
     }
 
+    // --------------------- Admin UI helpers -------------------------
+    function populateDefaultSourcesList() {
+      defaultSourcesList.innerHTML = "";
+      DEFAULT_SOURCES.forEach(src => {
+        const li = document.createElement("li");
+        li.textContent = `${src.name} — ${src.url}`;
+        defaultSourcesList.appendChild(li);
+      });
+    }
+
+    function populateCustomSourcesList() {
+      customSourcesList.innerHTML = "";
+      if (!customSources.length) {
+        const li = document.createElement("li");
+        li.textContent = "Nenhuma fonte personalizada cadastrada.";
+        li.className = "text-slate-400";
+        customSourcesList.appendChild(li);
+        return;
+      }
+      customSources.forEach((src, idx) => {
+        const li = document.createElement("li");
+        li.className = "flex justify-between items-center gap-2";
+        const span = document.createElement("span");
+        span.textContent = `${src.name} — ${src.url}`;
+        const btn = document.createElement("button");
+        btn.textContent = "Remover";
+        btn.className = "text-[11px] px-2 py-0.5 rounded border border-rose-200 text-rose-600 hover:bg-rose-50";
+        btn.addEventListener("click", () => {
+          customSources.splice(idx, 1);
+          saveCustomSources();
+          populateCustomSourcesList();
+        });
+        li.appendChild(span);
+        li.appendChild(btn);
+        customSourcesList.appendChild(li);
+      });
+    }
+
+    function openAdminDialog() {
+      populateDefaultSourcesList();
+      populateCustomSourcesList();
+      if (typeof adminDialog.showModal === "function") {
+        adminDialog.showModal();
+      } else {
+        adminDialog.style.display = "block";
+      }
+    }
+
+    // ----------------------- Eventos UI -----------------------------
     searchInput.addEventListener("input", (e) => {
-      FILTER_TEXT = e.target.value;
+      FILTER_TEXT = e.target.value || "";
       render();
     });
 
     sourceFilter.addEventListener("change", (e) => {
-      FILTER_SOURCE = e.target.value;
+      const val = e.target.value || "__all__";
+      FILTER_SOURCE = val;
       render();
     });
 
+    adminButton.addEventListener("click", () => {
+      if (isAdminLogged()) {
+        openAdminDialog();
+      } else {
+        adminUserInput.value = "";
+        adminPassInput.value = "";
+        if (typeof loginDialog.showModal === "function") {
+          loginDialog.showModal();
+        } else {
+          loginDialog.style.display = "block";
+        }
+      }
+    });
+
+    loginSubmitBtn.addEventListener("click", () => {
+      const user = adminUserInput.value.trim();
+      const pass = adminPassInput.value.trim();
+      if (user === "adm" && pass === "@mudar") {
+        setAdminLogged(true);
+        if (typeof loginDialog.close === "function") loginDialog.close();
+        openAdminDialog();
+      } else {
+        alert("Usuário ou senha inválidos.");
+      }
+    });
+
+    addSourceBtn.addEventListener("click", () => {
+      const name = newSourceName.value.trim();
+      const url = newSourceUrl.value.trim();
+      if (!name || !url) {
+        alert("Preencha o nome e a URL da fonte.");
+        return;
+      }
+      customSources.push({ name, url });
+      saveCustomSources();
+      newSourceName.value = "";
+      newSourceUrl.value = "";
+      populateCustomSourcesList();
+    });
+
+    reloadNewsBtn.addEventListener("click", () => {
+      if (typeof adminDialog.close === "function") adminDialog.close();
+      loadCustomSources();
+      loadAll();
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      setAdminLogged(false);
+      alert("Sessão do admin encerrada.");
+    });
+
+    // ------------------------- Inicialização ------------------------
     window.addEventListener("load", () => {
+      loadCustomSources();
+      FILTER_SOURCE = "telecom"; // valor inicial
+      sourceFilter.value = "telecom";
       loadAll();
     });
   </script>
